@@ -1,0 +1,96 @@
+👑 SUPERADMIN FEATURES (Comolor Pharmacy)
+The Superadmin is the system owner/developer (you) with unrestricted control across all pharmacies.
+
+🔐 Login
+Hardcoded superadmin login (e.g., admin@comolor.com)
+
+Accessible at /admin or /superadmin
+
+Protected with strong password and session control
+
+🏢 Pharmacy Management
+View list of all registered pharmacies
+
+View registration details (pharmacy name, owner, email, date registered)
+
+Filter/search by name, status, or license
+
+📅 Licensing Control
+View license status of each pharmacy:
+
+Active / Expired / Blocked
+
+Expiry date
+
+Manually approve or reject license payments (based on M-PESA code)
+
+Set license duration (e.g., 30 days)
+
+Auto-expire licenses after duration
+
+Block/unblock pharmacy access
+
+Send notification if license is about to expire (optional)
+
+💰 Financial Oversight
+Set or update global license price (default KES 3,000/month)
+
+Set or change the official Till Number
+
+View total income from license payments
+
+View license payment history (per pharmacy and overall)
+
+Export payment reports (optional)
+
+📄 Terms & Conditions
+View and edit the Terms & Conditions text
+
+Changes reflect on registration page (/register) and /terms
+
+Can set requirement to agree before registration continues
+
+📈 System Analytics
+View number of:
+
+Registered pharmacies
+
+Active licenses
+
+Expired licenses
+
+Total payments
+
+Pharmacy activity logs (login times, payments, usage)
+
+Daily registration trends
+
+🧪 Testing & Debug Tools (Optional)
+Test license expiry behavior
+
+Impersonate pharmacy user to debug their system (read-only)
+
+🔧 System Configuration
+Enable or disable new pharmacy registrations
+
+Update system name/logo
+
+Change superadmin password
+
+🛡️ Security & Access
+All /admin/* routes must be protected with superadmin role
+
+Only one superadmin account (you)
+
+Must not be editable or removable via UI
+
+🧾 Audit Trail (Optional but Recommended)
+Log all Superadmin actions:
+
+License approvals/rejections
+
+Pharmacy blocks/unblocks
+
+Terms edits
+
+Payment record changes

@@ -199,3 +199,53 @@ class Expense(db.Model):
     
     def __repr__(self):
         return f'<Expense {self.description}>'
+
+class SystemConfiguration(db.Model):
+    __tablename__ = 'system_configurations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    updater = db.relationship('User', backref='system_updates')
+    
+    def __repr__(self):
+        return f'<SystemConfiguration {self.key}>'
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String(100), nullable=False)
+    target_type = db.Column(db.String(50), nullable=False)  # pharmacy, license, payment, etc.
+    target_id = db.Column(db.Integer, nullable=True)
+    details = db.Column(db.Text)
+    ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref='audit_logs')
+    
+    def __repr__(self):
+        return f'<AuditLog {self.action} by {self.user_id}>'
+
+class PharmacyActivity(db.Model):
+    __tablename__ = 'pharmacy_activities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacies.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    activity_type = db.Column(db.String(50), nullable=False)  # login, sale, payment, etc.
+    details = db.Column(db.Text)
+    ip_address = db.Column(db.String(45))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    pharmacy = db.relationship('Pharmacy', backref='activities')
+    user = db.relationship('User', backref='activities')
+    
+    def __repr__(self):
+        return f'<PharmacyActivity {self.activity_type} for {self.pharmacy_id}>'

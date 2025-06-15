@@ -1,75 +1,99 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}Admin Dashboard - Comolor Pharmacy{% endblock %}
+{% block title %}Superadmin Dashboard - Comolor Pharmacy{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-tachometer-alt me-2"></i>Superadmin Dashboard</h2>
-    <div class="text-muted">
-        <i class="fas fa-crown me-1"></i>System Administrator
+    <h1 class="h3 mb-0 text-gray-800">👑 Superadmin Dashboard</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('admin.system_config') }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-cog"></i> System Config
+        </a>
+        <a href="{{ url_for('admin.terms_conditions') }}" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-file-contract"></i> Terms & Conditions
+        </a>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-history"></i> Audit Logs
+        </a>
     </div>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row g-4 mb-4">
-    <div class="col-md-6 col-xl-3">
-        <div class="card border-primary">
+<!-- Enhanced Statistics Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h6 class="card-title text-muted mb-1">Total Pharmacies</h6>
-                        <h3 class="mb-0 text-primary">{{ stats.total_pharmacies }}</h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Pharmacies</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_pharmacies }}</div>
+                        <div class="text-xs text-muted">
+                            Active: {{ stats.active_pharmacies }} | Blocked: {{ stats.blocked_pharmacies }}
+                        </div>
                     </div>
-                    <div class="text-primary">
-                        <i class="fas fa-store fa-2x"></i>
+                    <div class="col-auto">
+                        <i class="fas fa-store fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="card border-success">
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h6 class="card-title text-muted mb-1">Active Licenses</h6>
-                        <h3 class="mb-0 text-success">{{ stats.active_licenses }}</h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">KES {{ "{:,.2f}".format(stats.total_revenue) }}</div>
+                        <div class="text-xs text-success">
+                            This Month: KES {{ "{:,.2f}".format(stats.month_revenue) }}
+                        </div>
                     </div>
-                    <div class="text-success">
-                        <i class="fas fa-certificate fa-2x"></i>
+                    <div class="col-auto">
+                        <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="card border-warning">
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h6 class="card-title text-muted mb-1">Pending Payments</h6>
-                        <h3 class="mb-0 text-warning">{{ stats.pending_payments }}</h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Active Licenses</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.active_licenses }}</div>
+                        <div class="text-xs text-muted">
+                            Expired: {{ stats.expired_licenses }} | Pending: {{ stats.pending_licenses }}
+                        </div>
                     </div>
-                    <div class="text-warning">
-                        <i class="fas fa-clock fa-2x"></i>
+                    <div class="col-auto">
+                        <i class="fas fa-certificate fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="card border-info">
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h6 class="card-title text-muted mb-1">Month Revenue</h6>
-                        <h3 class="mb-0 text-info">{{ stats.month_revenue|currency }}</h3>
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Payments</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.pending_payments }}</div>
+                        <div class="text-xs text-muted">
+                            Today's Registrations: {{ stats.today_registrations }}
+                        </div>
                     </div>
-                    <div class="text-info">
-                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -77,155 +101,205 @@
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Recent Registrations -->
+<!-- System Configuration Status -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">System Configuration</h6>
+                <a href="{{ url_for('admin.system_config') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>License Price:</strong> KES {{ "{:,.2f}".format(stats.license_price) }}/month</p>
+                        <p><strong>M-PESA Till:</strong> {{ stats.mpesa_till }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>System Status:</strong> 
+                            <span class="badge badge-success">Active</span>
+                        </p>
+                        <p><strong>Registrations:</strong> 
+                            <span class="badge badge-info">Open</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-warning btn-sm btn-block mb-2">
+                    <i class="fas fa-credit-card"></i> Process Payments
+                </a>
+                <a href="{{ url_for('admin.financial_overview') }}" class="btn btn-success btn-sm btn-block mb-2">
+                    <i class="fas fa-chart-line"></i> Financial Overview
+                </a>
+                <a href="{{ url_for('admin.test_license_expiry') }}" class="btn btn-info btn-sm btn-block mb-2">
+                    <i class="fas fa-flask"></i> Test License Expiry
+                </a>
+                <a href="{{ url_for('admin.pharmacy_activities') }}" class="btn btn-secondary btn-sm btn-block">
+                    <i class="fas fa-activity"></i> Pharmacy Activities
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Analytics -->
+<div class="row">
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent Registrations</h5>
-                <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-sm btn-outline-primary">View All</a>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Daily Registrations (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="registrationChart" width="100%" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Payment Status Distribution</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+                <div class="mt-4 text-center small">
+                    <span class="mr-2"><i class="fas fa-circle text-success"></i> Confirmed</span>
+                    <span class="mr-2"><i class="fas fa-circle text-warning"></i> Pending</span>
+                    <span class="mr-2"><i class="fas fa-circle text-danger"></i> Rejected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Registrations</h6>
+                <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-primary btn-sm">View All</a>
             </div>
             <div class="card-body">
                 {% if recent_registrations %}
+                    {% for pharmacy in recent_registrations %}
+                    <div class="d-flex align-items-center py-2 border-bottom">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-primary">
+                                <i class="fas fa-store text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small text-gray-500">{{ pharmacy.created_at.strftime('%b %d, %Y') }}</div>
+                            <strong>{{ pharmacy.name }}</strong>
+                            <div class="text-muted small">{{ pharmacy.email }}</div>
+                        </div>
+                        <div>
+                            {% if pharmacy.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Blocked</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent registrations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Pending Payments</h6>
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-warning btn-sm">Process All</a>
+            </div>
+            <div class="card-body">
+                {% if pending_payments %}
+                    {% for payment in pending_payments %}
+                    <div class="d-flex align-items-center py-2 border-bottom">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-warning">
+                                <i class="fas fa-credit-card text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small text-gray-500">{{ payment.created_at.strftime('%b %d, %Y') }}</div>
+                            <strong>{{ payment.pharmacy.name }}</strong>
+                            <div class="text-muted small">M-PESA: {{ payment.mpesa_code }}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-weight-bold">KES {{ "{:,.2f}".format(payment.amount) }}</div>
+                            <div class="btn-group btn-group-sm">
+                                <form method="POST" action="{{ url_for('admin.confirm_payment', payment_id=payment.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-xs">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.reject_payment', payment_id=payment.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-xs">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No pending payments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expiring Licenses Alert -->
+{% if expiring_licenses %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4 border-left-warning">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">⚠️ Licenses Expiring Soon</h6>
+            </div>
+            <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead>
                             <tr>
                                 <th>Pharmacy</th>
                                 <th>Email</th>
-                                <th>Registered</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pharmacy in recent_registrations %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('admin.view_pharmacy', pharmacy_id=pharmacy.id) }}" 
-                                       class="text-decoration-none">
-                                        {{ pharmacy.name }}
-                                    </a>
-                                </td>
-                                <td>{{ pharmacy.email }}</td>
-                                <td>{{ pharmacy.created_at|date }}</td>
-                                <td>
-                                    <span class="badge bg-{% if pharmacy.is_active %}success{% else %}danger{% endif %}">
-                                        {% if pharmacy.is_active %}Active{% else %}Inactive{% endif %}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted text-center mb-0">No recent registrations</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Pending Payments -->
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Pending Payments</h5>
-                <a href="{{ url_for('admin.payments') }}" class="btn btn-sm btn-outline-warning">View All</a>
-            </div>
-            <div class="card-body">
-                {% if pending_payments %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Pharmacy</th>
-                                <th>M-PESA Code</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for payment in pending_payments %}
-                            <tr>
-                                <td>{{ payment.pharmacy.name }}</td>
-                                <td>{{ payment.mpesa_code }}</td>
-                                <td>{{ payment.amount|currency }}</td>
-                                <td>{{ payment.created_at|date }}</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <form method="POST" action="{{ url_for('admin.confirm_payment', payment_id=payment.id) }}" style="display: inline;">
-                                            <button type="submit" class="btn btn-success btn-sm" title="Confirm">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ url_for('admin.reject_payment', payment_id=payment.id) }}" style="display: inline;">
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Reject">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted text-center mb-0">No pending payments</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Expiring Licenses -->
-{% if expiring_licenses %}
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card border-warning">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Licenses Expiring Soon</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Pharmacy</th>
-                                <th>License Status</th>
-                                <th>Expiry Date</th>
+                                <th>Expires</th>
                                 <th>Days Left</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for license in expiring_licenses %}
-                            {% set days_left = (license.expiry_date - moment().date()).days %}
-                            <tr class="{% if days_left <= 0 %}table-danger{% elif days_left <= 3 %}table-warning{% endif %}">
+                            <tr>
+                                <td>{{ license.pharmacy.name }}</td>
+                                <td>{{ license.pharmacy.email }}</td>
+                                <td>{{ license.expiry_date.strftime('%Y-%m-%d') }}</td>
                                 <td>
-                                    <a href="{{ url_for('admin.view_pharmacy', pharmacy_id=license.pharmacy.id) }}" 
-                                       class="text-decoration-none">
-                                        {{ license.pharmacy.name }}
-                                    </a>
+                                    {% set days_left = (license.expiry_date - moment()).days %}
+                                    <span class="badge badge-warning">{{ days_left }} days</span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{% if license.status == 'active' %}success{% else %}warning{% endif %}">
-                                        {{ license.status.upper() }}
-                                    </span>
-                                </td>
-                                <td>{{ license.expiry_date|date }}</td>
-                                <td>
-                                    {% if days_left <= 0 %}
-                                    <span class="badge bg-danger">EXPIRED</span>
-                                    {% else %}
-                                    <span class="badge bg-warning">{{ days_left }} days</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('admin.view_pharmacy', pharmacy_id=license.pharmacy.id) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        View Details
+                                    <a href="{{ url_for('admin.extend_license', license_id=license.id, days=30) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-plus"></i> Extend
                                     </a>
                                 </td>
                             </tr>
@@ -239,38 +313,106 @@
 </div>
 {% endif %}
 
-<!-- Quick Actions -->
-<div class="row mt-4">
+<!-- Recent Audit Logs -->
+<div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Admin Actions</h6>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm">View All</a>
             </div>
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-primary w-100">
-                            <i class="fas fa-store me-2"></i>Manage Pharmacies
-                        </a>
+                {% if recent_audits %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for audit in recent_audits %}
+                                <tr>
+                                    <td>{{ audit.created_at.strftime('%m/%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{ audit.action }}</span>
+                                    </td>
+                                    <td>{{ audit.target_type }}</td>
+                                    <td>
+                                        {% if audit.details %}
+                                            {{ audit.details[:50] }}{% if audit.details|length > 50 %}...{% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">{{ audit.ip_address }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('admin.payments') }}" class="btn btn-warning w-100">
-                            <i class="fas fa-credit-card me-2"></i>Review Payments
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('admin.reports') }}" class="btn btn-info w-100">
-                            <i class="fas fa-chart-bar me-2"></i>View Reports
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary w-100">
-                            <i class="fas fa-cog me-2"></i>System Settings
-                        </a>
-                    </div>
-                </div>
+                {% else %}
+                    <p class="text-muted">No recent admin actions</p>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Registration trend chart
+const registrationData = {{ registration_trends | tojson }};
+const regCtx = document.getElementById('registrationChart').getContext('2d');
+new Chart(regCtx, {
+    type: 'line',
+    data: {
+        labels: registrationData.map(d => d.date),
+        datasets: [{
+            label: 'Daily Registrations',
+            data: registrationData.map(d => d.count),
+            borderColor: '#4e73df',
+            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+            borderWidth: 2,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Payment status pie chart
+const payCtx = document.getElementById('paymentChart').getContext('2d');
+new Chart(payCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Confirmed', 'Pending', 'Rejected'],
+        datasets: [{
+            data: [{{ stats.confirmed_payments }}, {{ stats.pending_payments }}, {{ stats.rejected_payments }}],
+            backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
 {% endblock %}
