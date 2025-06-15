@@ -118,7 +118,7 @@ We reserve the right to suspend accounts for non-payment or misuse.''', 'System 
         db.session.commit()
         logging.info("System configurations initialized")
     
-    # Add template globals
+    # Add template globals and filters
     @app.context_processor
     def utility_processor():
         from datetime import datetime, timedelta
@@ -128,6 +128,27 @@ We reserve the right to suspend accounts for non-payment or misuse.''', 'System 
             utcnow=datetime.utcnow,
             timedelta=timedelta
         )
+    
+    @app.template_filter('date')
+    def date_filter(date):
+        """Format date"""
+        if date:
+            return date.strftime('%Y-%m-%d')
+        return 'N/A'
+    
+    @app.template_filter('datetime')
+    def datetime_filter(datetime_obj):
+        """Format datetime"""
+        if datetime_obj:
+            return datetime_obj.strftime('%Y-%m-%d %H:%M')
+        return 'N/A'
+    
+    @app.template_filter('currency')
+    def currency_filter(amount):
+        """Format currency for Kenyan Shillings"""
+        if amount is not None:
+            return f"KES {amount:,.2f}"
+        return "KES 0.00"
     
     # Register blueprints
     from blueprints.main import main_bp

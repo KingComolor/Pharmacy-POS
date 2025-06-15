@@ -1,264 +1,278 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}{{ pharmacy.name }} - Pharmacy Details - Comolor Pharmacy{% endblock %}
+{% block title %}{{ pharmacy.name }} - Pharmacy Details{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-store me-2"></i>{{ pharmacy.name }}</h2>
-    <div>
-        <form method="POST" action="{{ url_for('admin.toggle_pharmacy', pharmacy_id=pharmacy.id) }}" style="display: inline;">
-            <button type="submit" class="btn btn-{% if pharmacy.is_active %}danger{% else %}success{% endif %}">
-                <i class="fas fa-{% if pharmacy.is_active %}ban{% else %}check{% endif %} me-2"></i>
-                {% if pharmacy.is_active %}Deactivate{% else %}Activate{% endif %}
-            </button>
-        </form>
-        <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Pharmacies
+    <h1 class="h3 mb-0 text-gray-800">📋 {{ pharmacy.name }}</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Pharmacies
+        </a>
+        <a href="{{ url_for('admin.block_pharmacy', pharmacy_id=pharmacy.id) }}" 
+           class="btn btn-{% if pharmacy.is_active %}danger{% else %}success{% endif %}">
+            <i class="fas fa-{% if pharmacy.is_active %}ban{% else %}check{% endif %}"></i>
+            {% if pharmacy.is_active %}Block{% else %}Unblock{% endif %} Pharmacy
         </a>
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Pharmacy Information -->
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Pharmacy Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <strong>Name:</strong><br>
-                    {{ pharmacy.name }}
-                </div>
-                
-                <div class="mb-3">
-                    <strong>Email:</strong><br>
-                    <a href="mailto:{{ pharmacy.email }}" class="text-decoration-none">{{ pharmacy.email }}</a>
-                </div>
-                
-                <div class="mb-3">
-                    <strong>Phone:</strong><br>
-                    {% if pharmacy.phone %}
-                    <a href="tel:{{ pharmacy.phone }}" class="text-decoration-none">{{ pharmacy.phone }}</a>
-                    {% else %}
-                    <span class="text-muted">Not provided</span>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    <strong>Address:</strong><br>
-                    {{ pharmacy.address or 'Not provided' }}
-                </div>
-                
-                <div class="mb-3">
-                    <strong>M-PESA Till:</strong><br>
-                    {{ pharmacy.mpesa_till }}
-                </div>
-                
-                <div class="mb-3">
-                    <strong>Status:</strong><br>
-                    <span class="badge bg-{% if pharmacy.is_active %}success{% else %}danger{% endif %}">
-                        {% if pharmacy.is_active %}Active{% else %}Inactive{% endif %}
-                    </span>
-                </div>
-                
-                <div class="mb-0">
-                    <strong>Registered:</strong><br>
-                    {{ pharmacy.created_at|datetime }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 border-end">
-                        <h4 class="mb-1 text-primary">{{ stats.total_drugs }}</h4>
-                        <small class="text-muted">Total Drugs</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="mb-1 text-success">{{ stats.total_sales }}</h4>
-                        <small class="text-muted">Total Sales</small>
-                    </div>
-                </div>
-                <hr>
-                <div class="text-center">
-                    <h4 class="mb-1 text-info">{{ stats.total_revenue|currency }}</h4>
-                    <small class="text-muted">Total Revenue</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- License & Payment History -->
+<!-- Pharmacy Details -->
+<div class="row">
     <div class="col-lg-8">
-        <div class="row g-4">
-            <!-- License History -->
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>License History</h5>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Pharmacy Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ pharmacy.name }}</p>
+                        <p><strong>Email:</strong> {{ pharmacy.email }}</p>
+                        <p><strong>Phone:</strong> {{ pharmacy.phone }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if pharmacy.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Blocked</span>
+                            {% endif %}
+                        </p>
                     </div>
-                    <div class="card-body">
-                        {% if licenses %}
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Status</th>
-                                        <th>Amount</th>
-                                        <th>Start Date</th>
-                                        <th>Expiry Date</th>
-                                        <th>Created</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for license in licenses %}
-                                    <tr>
-                                        <td>
-                                            <span class="badge bg-{% if license.status == 'active' %}success{% elif license.status == 'pending' %}warning{% else %}danger{% endif %}">
-                                                {{ license.status.upper() }}
-                                            </span>
-                                            {% if license.status == 'active' and license.is_expired() %}
-                                            <br><small class="text-danger">EXPIRED</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ license.amount|currency }}</td>
-                                        <td>{{ license.start_date|date if license.start_date else '-' }}</td>
-                                        <td>{{ license.expiry_date|date if license.expiry_date else '-' }}</td>
-                                        <td>{{ license.created_at|date }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <p class="text-muted text-center">No license history</p>
-                        {% endif %}
+                    <div class="col-md-6">
+                        <p><strong>Registration Date:</strong> {{ pharmacy.created_at|datetime }}</p>
+                        <p><strong>Terms Accepted:</strong> 
+                            {% if pharmacy.terms_accepted %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-warning">No</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>M-PESA Till:</strong> {{ pharmacy.mpesa_till }}</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Payment History -->
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment History</h5>
+                {% if pharmacy.address %}
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Address:</strong><br>{{ pharmacy.address }}</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        {% if payments %}
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>M-PESA Code</th>
-                                        <th>Phone</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Confirmed By</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for payment in payments %}
-                                    <tr>
-                                        <td>{{ payment.mpesa_code }}</td>
-                                        <td>{{ payment.phone_number }}</td>
-                                        <td>{{ payment.amount|currency }}</td>
-                                        <td>
-                                            <span class="badge bg-{% if payment.status == 'confirmed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
-                                                {{ payment.status.upper() }}
-                                            </span>
-                                        </td>
-                                        <td>{{ payment.created_at|datetime }}</td>
-                                        <td>
-                                            {% if payment.confirmer %}
+                {% endif %}
+                {% if pharmacy.receipt_footer %}
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Receipt Footer:</strong><br>{{ pharmacy.receipt_footer }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- License Information -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">License History</h6>
+            </div>
+            <div class="card-body">
+                {% if pharmacy.licenses %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Start Date</th>
+                                    <th>Expiry Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for license in pharmacy.licenses %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-{% if license.status == 'active' %}success{% elif license.status == 'expired' %}danger{% else %}warning{% endif %}">
+                                            {{ license.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ license.amount|currency }}</td>
+                                    <td>{{ license.start_date|datetime if license.start_date else 'N/A' }}</td>
+                                    <td>
+                                        {{ license.expiry_date|datetime if license.expiry_date else 'N/A' }}
+                                        {% if license.expiry_date and license.status == 'active' %}
+                                            {% set days_left = (license.expiry_date.date() - now().date()).days %}
+                                            {% if days_left <= 7 %}
+                                                <br><small class="text-{% if days_left <= 1 %}danger{% elif days_left <= 3 %}warning{% else %}info{% endif %}">
+                                                    {{ days_left }} days left
+                                                </small>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if license.status == 'active' %}
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('admin.extend_license', license_id=license.id, days=30) }}" 
+                                                   class="btn btn-success btn-xs" title="Extend 30 days">
+                                                    <i class="fas fa-plus"></i> 30d
+                                                </a>
+                                                <a href="{{ url_for('admin.extend_license', license_id=license.id, days=7) }}" 
+                                                   class="btn btn-info btn-xs" title="Extend 7 days">
+                                                    <i class="fas fa-plus"></i> 7d
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No licenses found for this pharmacy.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Payment History</h6>
+            </div>
+            <div class="card-body">
+                {% if pharmacy.payments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>M-PESA Code</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Confirmed By</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in pharmacy.payments %}
+                                <tr>
+                                    <td>{{ payment.created_at|datetime }}</td>
+                                    <td>{{ payment.mpesa_code }}</td>
+                                    <td>{{ payment.amount|currency }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if payment.status == 'confirmed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                            {{ payment.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if payment.confirmer %}
                                             {{ payment.confirmer.first_name }} {{ payment.confirmer.last_name }}
                                             <br><small class="text-muted">{{ payment.confirmation_date|datetime }}</small>
-                                            {% else %}
-                                            -
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if payment.status == 'pending' %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.status == 'pending' %}
                                             <div class="btn-group btn-group-sm">
-                                                <form method="POST" action="{{ url_for('admin.confirm_payment', payment_id=payment.id) }}" style="display: inline;">
-                                                    <button type="submit" class="btn btn-success btn-sm" title="Confirm">
+                                                <form method="POST" action="{{ url_for('admin.confirm_payment', payment_id=payment.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-xs" title="Confirm Payment">
                                                         <i class="fas fa-check"></i>
                                                     </button>
                                                 </form>
-                                                <form method="POST" action="{{ url_for('admin.reject_payment', payment_id=payment.id) }}" style="display: inline;">
-                                                    <button type="submit" class="btn btn-danger btn-sm" title="Reject">
+                                                <form method="POST" action="{{ url_for('admin.reject_payment', payment_id=payment.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger btn-xs" title="Reject Payment">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </form>
                                             </div>
-                                            {% else %}
-                                            -
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <p class="text-muted text-center">No payment history</p>
-                        {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                {% else %}
+                    <p class="text-muted">No payment history found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between py-2">
+                    <span>Total Users:</span>
+                    <span class="badge badge-info">{{ pharmacy.users|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span>Total Payments:</span>
+                    <span class="badge badge-primary">{{ pharmacy.payments|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span>Confirmed Payments:</span>
+                    <span class="badge badge-success">{{ pharmacy.payments|selectattr('status', 'equalto', 'confirmed')|list|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span>Total Revenue:</span>
+                    {% set total_revenue = pharmacy.payments|selectattr('status', 'equalto', 'confirmed')|sum(attribute='amount') %}
+                    <span class="badge badge-success">{{ total_revenue|currency }}</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Users -->
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Users</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if users %}
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
-                                        <th>Joined</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                    <tr>
-                                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                                        <td>{{ user.email }}</td>
-                                        <td>
-                                            <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'pharmacist' %}success{% else %}primary{% endif %}">
-                                                {{ user.role.title() }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
-                                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
-                                            </span>
-                                        </td>
-                                        <td>{{ user.created_at|date }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                {% if pharmacy.is_active %}
+                    <a href="{{ url_for('admin.impersonate_pharmacy', pharmacy_id=pharmacy.id) }}" 
+                       class="btn btn-info btn-sm btn-block mb-2">
+                        <i class="fas fa-user-secret"></i> Impersonate (Debug)
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('admin.pharmacy_activities', pharmacy_id=pharmacy.id) }}" 
+                   class="btn btn-secondary btn-sm btn-block mb-2">
+                    <i class="fas fa-chart-line"></i> View Activities
+                </a>
+                <a href="{{ url_for('admin.payments', pharmacy_id=pharmacy.id) }}" 
+                   class="btn btn-warning btn-sm btn-block">
+                    <i class="fas fa-credit-card"></i> View All Payments
+                </a>
+            </div>
+        </div>
+
+        <!-- Users -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Pharmacy Users</h6>
+            </div>
+            <div class="card-body">
+                {% if pharmacy.users %}
+                    {% for user in pharmacy.users %}
+                    <div class="d-flex align-items-center py-2 border-bottom">
+                        <div class="flex-grow-1">
+                            <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                            <br><small class="text-muted">{{ user.email }}</small>
                         </div>
-                        {% else %}
-                        <p class="text-muted text-center">No users found</p>
-                        {% endif %}
+                        <div>
+                            <span class="badge badge-{% if user.role == 'admin' %}primary{% elif user.role == 'pharmacist' %}info{% else %}secondary{% endif %}">
+                                {{ user.role.title() }}
+                            </span>
+                            {% if not user.is_active %}
+                                <br><span class="badge badge-danger">Inactive</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No users found.</p>
+                {% endif %}
             </div>
         </div>
     </div>

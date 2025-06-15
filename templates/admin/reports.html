@@ -1,198 +1,213 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block title %}Admin Reports - Comolor Pharmacy{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-chart-bar me-2"></i>System Reports</h2>
-    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    <h1 class="h3 mb-0 text-gray-800">📊 System Reports</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 </div>
 
-<!-- Revenue Report -->
-<div class="row g-4 mb-4">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Monthly Revenue Trend</h5>
+<!-- Monthly Revenue Chart -->
+<div class="row">
+    <div class="col-xl-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Trend</h6>
             </div>
             <div class="card-body">
-                {% if monthly_revenue %}
-                <canvas id="revenueChart" height="100"></canvas>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                    <h6 class="text-muted">No revenue data available</h6>
-                </div>
-                {% endif %}
+                <canvas id="monthlyRevenueChart" width="100%" height="40"></canvas>
             </div>
         </div>
     </div>
     
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>License Status</h5>
+    <div class="col-xl-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">License Status Distribution</h6>
             </div>
             <div class="card-body">
-                {% if license_stats %}
-                <canvas id="licenseChart" height="150"></canvas>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
-                    <h6 class="text-muted">No license data available</h6>
+                <canvas id="licenseStatusChart"></canvas>
+                <div class="mt-3">
+                    {% for status in license_stats %}
+                    <div class="d-flex justify-content-between py-1">
+                        <span><i class="fas fa-circle text-{% if status.status == 'active' %}success{% elif status.status == 'expired' %}danger{% else %}warning{% endif %}"></i> {{ status.status.title() }}</span>
+                        <span class="font-weight-bold">{{ status.count }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Top Pharmacies -->
-<div class="row g-4">
+<!-- Top Pharmacies and Revenue Breakdown -->
+<div class="row">
     <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Pharmacies by Revenue</h5>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top Paying Pharmacies</h6>
             </div>
             <div class="card-body">
                 {% if top_pharmacies %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Pharmacy</th>
-                                <th class="text-end">Total Paid</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pharmacy_name, total_paid in top_pharmacies %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ pharmacy_name }}</td>
-                                <td class="text-end">{{ total_paid|currency }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Pharmacy</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pharmacy in top_pharmacies %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-{% if loop.index <= 3 %}warning{% else %}secondary{% endif %}">
+                                            {{ loop.index }}
+                                        </span>
+                                    </td>
+                                    <td>{{ pharmacy.name }}</td>
+                                    <td class="text-success font-weight-bold">{{ pharmacy.total_paid|currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-store fa-3x text-muted mb-3"></i>
-                    <h6 class="text-muted">No pharmacy data available</h6>
-                </div>
+                    <p class="text-muted">No revenue data available</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- System Summary -->
     <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>System Summary</h5>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Summary</h6>
             </div>
             <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 border-end">
-                        <h4 class="mb-1 text-primary">{{ license_stats|selectattr('0', 'equalto', 'active')|map(attribute='1')|sum or 0 }}</h4>
-                        <small class="text-muted">Active Licenses</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="mb-1 text-warning">{{ license_stats|selectattr('0', 'equalto', 'pending')|map(attribute='1')|sum or 0 }}</h4>
-                        <small class="text-muted">Pending Licenses</small>
-                    </div>
-                </div>
-                <hr>
-                <div class="row text-center">
-                    <div class="col-6 border-end">
-                        <h4 class="mb-1 text-success">{{ monthly_revenue|map(attribute='1')|sum or 0|currency }}</h4>
-                        <small class="text-muted">Total Revenue</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="mb-1 text-info">{{ top_pharmacies|length or 0 }}</h4>
-                        <small class="text-muted">Paying Pharmacies</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Export Options -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-download me-2"></i>Export Reports</h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Report export functionality is not yet implemented. Future versions will support:
-                    <ul class="mt-2 mb-0">
-                        <li>PDF report generation</li>
-                        <li>CSV data export</li>
-                        <li>Email report scheduling</li>
-                        <li>Custom date range reports</li>
-                    </ul>
-                </div>
+                {% set total_revenue = monthly_revenue|sum(attribute='revenue') %}
+                {% set avg_monthly = (total_revenue / (monthly_revenue|length)) if monthly_revenue else 0 %}
                 
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-primary w-100" disabled>
-                            <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-success w-100" disabled>
-                            <i class="fas fa-file-csv me-2"></i>Export to CSV
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-info w-100" disabled>
-                            <i class="fas fa-envelope me-2"></i>Email Report
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-warning w-100" disabled>
-                            <i class="fas fa-calendar me-2"></i>Schedule Report
-                        </button>
-                    </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>Total Revenue (12 months):</span>
+                    <span class="font-weight-bold text-success">{{ total_revenue|currency }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>Average Monthly Revenue:</span>
+                    <span class="font-weight-bold text-info">{{ avg_monthly|currency }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span>Peak Month:</span>
+                    {% if monthly_revenue %}
+                        {% set peak = monthly_revenue|max(attribute='revenue') %}
+                        <span class="font-weight-bold text-warning">{{ peak.revenue|currency }}</span>
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span>Growth Trend:</span>
+                    {% if monthly_revenue|length >= 2 %}
+                        {% set latest = monthly_revenue[-1].revenue %}
+                        {% set previous = monthly_revenue[-2].revenue %}
+                        {% set growth = ((latest - previous) / previous * 100) if previous > 0 else 0 %}
+                        <span class="font-weight-bold text-{% if growth > 0 %}success{% elif growth < 0 %}danger{% else %}secondary{% endif %}">
+                            {% if growth > 0 %}+{% endif %}{{ growth|round(1) }}%
+                        </span>
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_scripts %}
+<!-- Detailed Tables -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Details</h6>
+            </div>
+            <div class="card-body">
+                {% if monthly_revenue %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Revenue</th>
+                                    <th>Growth</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month in monthly_revenue %}
+                                <tr>
+                                    <td>{{ month.month }}</td>
+                                    <td class="font-weight-bold text-success">{{ month.revenue|currency }}</td>
+                                    <td>
+                                        {% if not loop.first %}
+                                            {% set prev_revenue = monthly_revenue[loop.index0 - 1].revenue %}
+                                            {% set growth = ((month.revenue - prev_revenue) / prev_revenue * 100) if prev_revenue > 0 else 0 %}
+                                            <span class="text-{% if growth > 0 %}success{% elif growth < 0 %}danger{% else %}secondary{% endif %}">
+                                                {% if growth > 0 %}+{% endif %}{{ growth|round(1) }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set avg_revenue = total_revenue / monthly_revenue|length %}
+                                        {% if month.revenue > avg_revenue * 1.2 %}
+                                            <span class="badge badge-success">Excellent</span>
+                                        {% elif month.revenue > avg_revenue %}
+                                            <span class="badge badge-info">Good</span>
+                                        {% elif month.revenue > avg_revenue * 0.8 %}
+                                            <span class="badge badge-warning">Average</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Below Average</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No monthly revenue data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-{% if monthly_revenue %}
 // Monthly Revenue Chart
-const revenueData = {
-    labels: [{% for month, revenue in monthly_revenue %}'{{ month.strftime('%b %Y') }}'{% if not loop.last %},{% endif %}{% endfor %}],
-    datasets: [{
-        label: 'Monthly Revenue (KES)',
-        data: [{% for month, revenue in monthly_revenue %}{{ revenue }}{% if not loop.last %},{% endif %}{% endfor %}],
-        borderColor: 'rgb(13, 110, 253)',
-        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-        tension: 0.1
-    }]
-};
-
-const revenueConfig = {
+const monthlyData = {{ monthly_revenue | tojson }};
+const monthlyCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+new Chart(monthlyCtx, {
     type: 'line',
-    data: revenueData,
+    data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [{
+            label: 'Monthly Revenue (KES)',
+            data: monthlyData.map(d => d.revenue),
+            borderColor: '#4e73df',
+            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+        }]
+    },
     options: {
         responsive: true,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
         scales: {
             y: {
                 beginAtZero: true,
@@ -202,37 +217,39 @@ const revenueConfig = {
                     }
                 }
             }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: KES ' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
         }
     }
-};
+});
 
-new Chart(document.getElementById('revenueChart'), revenueConfig);
-{% endif %}
-
-{% if license_stats %}
-// License Status Chart
-const licenseData = {
-    labels: [{% for status, count in license_stats %}'{{ status.title() }}'{% if not loop.last %},{% endif %}{% endfor %}],
-    datasets: [{
-        data: [{% for status, count in license_stats %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}],
-        backgroundColor: ['#198754', '#ffc107', '#dc3545']
-    }]
-};
-
-const licenseConfig = {
+// License Status Pie Chart
+const licenseData = {{ license_stats | tojson }};
+const statusCtx = document.getElementById('licenseStatusChart').getContext('2d');
+new Chart(statusCtx, {
     type: 'doughnut',
-    data: licenseData,
+    data: {
+        labels: licenseData.map(d => d.status.charAt(0).toUpperCase() + d.status.slice(1)),
+        datasets: [{
+            data: licenseData.map(d => d.count),
+            backgroundColor: ['#1cc88a', '#e74a3b', '#f6c23e']
+        }]
+    },
     options: {
         responsive: true,
         plugins: {
             legend: {
-                position: 'bottom'
+                display: false
             }
         }
     }
-};
-
-new Chart(document.getElementById('licenseChart'), licenseConfig);
-{% endif %}
+});
 </script>
 {% endblock %}

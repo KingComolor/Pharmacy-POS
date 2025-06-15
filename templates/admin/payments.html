@@ -1,224 +1,255 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}Manage Payments - Comolor Pharmacy{% endblock %}
+{% block title %}Payment Management - Comolor Pharmacy{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-credit-card me-2"></i>Manage Payments</h2>
-    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    <h1 class="h3 mb-0 text-gray-800">💳 Payment Management</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 </div>
 
-<!-- Status Filter -->
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-4">
-                <label for="status" class="form-label">Payment Status</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value="confirmed" {% if status == 'confirmed' %}selected{% endif %}>Confirmed</option>
-                    <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
-                    <option value="">All Status</option>
-                </select>
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-primary">
-                    <i class="fas fa-filter me-2"></i>Filter
-                </button>
-            </div>
-        </form>
+<!-- Status Filter Tabs -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link {% if status == 'pending' or not status %}active{% endif %}" 
+                   href="{{ url_for('admin.payments', status='pending') }}">
+                    <i class="fas fa-clock"></i> Pending
+                    {% if status != 'pending' %}
+                        <span class="badge badge-warning ml-1">{{ payment_counts.pending or 0 }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status == 'confirmed' %}active{% endif %}" 
+                   href="{{ url_for('admin.payments', status='confirmed') }}">
+                    <i class="fas fa-check-circle"></i> Confirmed
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status == 'rejected' %}active{% endif %}" 
+                   href="{{ url_for('admin.payments', status='rejected') }}">
+                    <i class="fas fa-times-circle"></i> Rejected
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status == 'all' %}active{% endif %}" 
+                   href="{{ url_for('admin.payments', status='all') }}">
+                    <i class="fas fa-list"></i> All Payments
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
 
 <!-- Payments Table -->
-<div class="card">
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            {% if status == 'pending' or not status %}
+                Pending Payments ({{ payments.total }} total)
+            {% elif status == 'confirmed' %}
+                Confirmed Payments ({{ payments.total }} total)
+            {% elif status == 'rejected' %}
+                Rejected Payments ({{ payments.total }} total)
+            {% else %}
+                All Payments ({{ payments.total }} total)
+            {% endif %}
+        </h6>
+    </div>
     <div class="card-body">
         {% if payments.items %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Pharmacy</th>
-                        <th>M-PESA Details</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Date Submitted</th>
-                        <th>Confirmed By</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for payment in payments.items %}
-                    <tr>
-                        <td>
-                            <a href="{{ url_for('admin.view_pharmacy', pharmacy_id=payment.pharmacy.id) }}" 
-                               class="text-decoration-none">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Pharmacy</th>
+                            <th>M-PESA Code</th>
+                            <th>Phone</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Processed By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments.items %}
+                        <tr class="{% if payment.status == 'pending' %}table-warning{% elif payment.status == 'confirmed' %}table-success{% elif payment.status == 'rejected' %}table-danger{% endif %}">
+                            <td>{{ payment.created_at|datetime }}</td>
+                            <td>
                                 <strong>{{ payment.pharmacy.name }}</strong>
-                            </a>
-                            <br><small class="text-muted">{{ payment.pharmacy.email }}</small>
-                        </td>
-                        <td>
-                            <strong>Code:</strong> {{ payment.mpesa_code }}<br>
-                            <strong>Phone:</strong> {{ payment.phone_number }}
-                        </td>
-                        <td>{{ payment.amount|currency }}</td>
-                        <td>
-                            <span class="badge bg-{% if payment.status == 'confirmed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
-                                {{ payment.status.upper() }}
-                            </span>
-                        </td>
-                        <td>{{ payment.created_at|datetime }}</td>
-                        <td>
-                            {% if payment.confirmer %}
-                            {{ payment.confirmer.first_name }} {{ payment.confirmer.last_name }}
-                            <br><small class="text-muted">{{ payment.confirmation_date|datetime }}</small>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if payment.status == 'pending' %}
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-success" 
-                                        onclick="confirmPayment({{ payment.id }}, '{{ payment.pharmacy.name }}', '{{ payment.mpesa_code }}')">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger"
-                                        onclick="rejectPayment({{ payment.id }}, '{{ payment.pharmacy.name }}', '{{ payment.mpesa_code }}')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                                <br><small class="text-muted">{{ payment.pharmacy.email }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ payment.mpesa_code }}</strong>
+                            </td>
+                            <td>{{ payment.phone_number }}</td>
+                            <td class="text-right">
+                                <strong>{{ payment.amount|currency }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if payment.status == 'confirmed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                    {{ payment.status.title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if payment.confirmer %}
+                                    <strong>{{ payment.confirmer.first_name }} {{ payment.confirmer.last_name }}</strong>
+                                    <br><small class="text-muted">{{ payment.confirmation_date|datetime }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if payment.status == 'pending' %}
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="POST" action="{{ url_for('admin.confirm_payment', payment_id=payment.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm" title="Confirm Payment" 
+                                                    onclick="return confirm('Confirm this payment of {{ payment.amount|currency }}?')">
+                                                <i class="fas fa-check"></i> Confirm
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('admin.reject_payment', payment_id=payment.id) }}" class="d-inline ml-1">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Reject Payment"
+                                                    onclick="return confirm('Reject this payment of {{ payment.amount|currency }}?')">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">No actions available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Pagination -->
-        {% if payments.pages > 1 %}
-        <nav aria-label="Payments pagination">
-            <ul class="pagination justify-content-center">
-                {% if payments.has_prev %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('admin.payments', page=payments.prev_num, status=status) }}">Previous</a>
-                </li>
-                {% endif %}
-                
-                {% for page_num in payments.iter_pages() %}
-                    {% if page_num %}
-                        {% if page_num != payments.page %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('admin.payments', page=page_num, status=status) }}">{{ page_num }}</a>
-                        </li>
-                        {% else %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_num }}</span>
-                        </li>
+            <!-- Pagination -->
+            {% if payments.pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Showing {{ payments.per_page * (payments.page - 1) + 1 }} to 
+                    {{ payments.per_page * payments.page if payments.page < payments.pages else payments.total }} 
+                    of {{ payments.total }} entries
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if payments.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.payments', page=payments.prev_num, status=status) }}">Previous</a>
+                            </li>
                         {% endif %}
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if payments.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('admin.payments', page=payments.next_num, status=status) }}">Next</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+                        
+                        {% for page_num in payments.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != payments.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.payments', page=page_num, status=status) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if payments.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.payments', page=payments.next_num, status=status) }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
         {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
-            <h5 class="text-muted">No payments found</h5>
-            <p class="text-muted">
-                {% if status %}
-                No {{ status }} payments found.
-                {% else %}
-                No payment submissions yet.
-                {% endif %}
-            </p>
-        </div>
+            <div class="text-center py-5">
+                <i class="fas fa-credit-card fa-3x text-gray-300"></i>
+                <h5 class="mt-3 text-gray-600">No payments found</h5>
+                <p class="text-muted">
+                    {% if status == 'pending' or not status %}
+                        No pending payments to process.
+                    {% elif status == 'confirmed' %}
+                        No confirmed payments in the system.
+                    {% elif status == 'rejected' %}
+                        No rejected payments found.
+                    {% else %}
+                        No payments found in the system.
+                    {% endif %}
+                </p>
+            </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Confirm Payment Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Payment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Quick Stats for Pending Payments -->
+{% if status == 'pending' or not status %}
+    {% if payments.items %}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                                Pending Count</div>
+                            <div class="h5 mb-0 font-weight-bold text-white">{{ payments.total }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to confirm the payment for:</p>
-                <ul>
-                    <li><strong>Pharmacy:</strong> <span id="confirmPharmacyName"></span></li>
-                    <li><strong>M-PESA Code:</strong> <span id="confirmMpesaCode"></span></li>
-                </ul>
-                <p class="text-success">This will activate their license for 30 days.</p>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                                Total Amount</div>
+                            {% set total_pending = payments.items|sum(attribute='amount') %}
+                            <div class="h5 mb-0 font-weight-bold text-white">{{ total_pending|currency }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="confirmForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-success">Confirm Payment</button>
-                </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-white text-uppercase mb-1">
+                                Unique Pharmacies</div>
+                            {% set unique_pharmacies = payments.items|map(attribute='pharmacy_id')|unique|list|length %}
+                            <div class="h5 mb-0 font-weight-bold text-white">{{ unique_pharmacies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-store fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Reject Payment Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Reject Payment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to reject the payment for:</p>
-                <ul>
-                    <li><strong>Pharmacy:</strong> <span id="rejectPharmacyName"></span></li>
-                    <li><strong>M-PESA Code:</strong> <span id="rejectMpesaCode"></span></li>
-                </ul>
-                <p class="text-danger">This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="rejectForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Reject Payment</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-function confirmPayment(paymentId, pharmacyName, mpesaCode) {
-    document.getElementById('confirmPharmacyName').textContent = pharmacyName;
-    document.getElementById('confirmMpesaCode').textContent = mpesaCode;
-    document.getElementById('confirmForm').action = "{{ url_for('admin.confirm_payment', payment_id=0) }}".replace('0', paymentId);
-    new bootstrap.Modal(document.getElementById('confirmModal')).show();
-}
-
-function rejectPayment(paymentId, pharmacyName, mpesaCode) {
-    document.getElementById('rejectPharmacyName').textContent = pharmacyName;
-    document.getElementById('rejectMpesaCode').textContent = mpesaCode;
-    document.getElementById('rejectForm').action = "{{ url_for('admin.reject_payment', payment_id=0) }}".replace('0', paymentId);
-    new bootstrap.Modal(document.getElementById('rejectModal')).show();
-}
-</script>
+    {% endif %}
+{% endif %}
 {% endblock %}
