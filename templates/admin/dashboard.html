@@ -293,7 +293,7 @@
                                 <td>{{ license.pharmacy.email }}</td>
                                 <td>{{ license.expiry_date.strftime('%Y-%m-%d') }}</td>
                                 <td>
-                                    {% set days_left = (license.expiry_date - moment()).days %}
+                                    {% set days_left = (license.expiry_date.date() - now().date()).days if license.expiry_date else 0 %}
                                     <span class="badge badge-warning">{{ days_left }} days</span>
                                 </td>
                                 <td>

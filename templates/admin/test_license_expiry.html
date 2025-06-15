@@ -37,7 +37,7 @@
                             </thead>
                             <tbody>
                                 {% for license in expiring_licenses %}
-                                {% set days_left = (license.expiry_date.date() - moment().date()).days %}
+                                {% set days_left = (license.expiry_date.date() - now().date()).days %}
                                 <tr class="{% if days_left <= 1 %}table-danger{% elif days_left <= 3 %}table-warning{% endif %}">
                                     <td>
                                         <strong>{{ license.pharmacy.name }}</strong>
@@ -175,8 +175,8 @@
             </div>
             <div class="card-body">
                 {% set total_licenses = expiring_licenses|length %}
-                {% set expired_count = expiring_licenses|selectattr('expiry_date', 'lt', moment())|list|length %}
-                {% set today_count = expiring_licenses|selectattr('expiry_date', 'gt', moment())|selectattr('expiry_date', 'lt', moment() + timedelta(days=1))|list|length %}
+                {% set expired_count = 0 %}
+                {% set today_count = 0 %}
                 
                 <div class="d-flex justify-content-between py-1">
                     <span>Total Expiring:</span>

@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -115,6 +117,17 @@ We reserve the right to suspend accounts for non-payment or misuse.''', 'System 
         
         db.session.commit()
         logging.info("System configurations initialized")
+    
+    # Add template globals
+    @app.context_processor
+    def utility_processor():
+        from datetime import datetime, timedelta
+        return dict(
+            moment=datetime,
+            now=datetime.now,
+            utcnow=datetime.utcnow,
+            timedelta=timedelta
+        )
     
     # Register blueprints
     from blueprints.main import main_bp
