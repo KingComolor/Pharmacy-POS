@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-receipt me-2"></i>Expense Management</h2>
+    <a href="{{ url_for('expenses.add_expense') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add New Expense
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">Date From</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">Date To</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-filter me-1"></i>Filter
+                </button>
+                <a href="{{ url_for('expenses.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-warning">Total Expenses</h6>
+                        <h3 class="mb-0">{{ total_amount|currency }}</h3>
+                        <small class="text-muted">for selected period</small>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-money-bill-wave fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expenses Table -->
+<div class="card">
+    <div class="card-body">
+        {% if expenses.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Receipt #</th>
+                        <th class="text-end">Amount</th>
+                        <th>Added By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses.items %}
+                    <tr>
+                        <td>{{ expense.date|date }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ expense.category }}</span>
+                        </td>
+                        <td>{{ expense.description }}</td>
+                        <td>{{ expense.receipt_number or '-' }}</td>
+                        <td class="text-end">{{ expense.amount|currency }}</td>
+                        <td>{{ expense.creator.first_name }} {{ expense.creator.last_name }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('expenses.edit_expense', expense_id=expense.id) }}" 
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete"
+                                        onclick="deleteExpense({{ expense.id }}, '{{ expense.description }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if expenses.pages > 1 %}
+        <nav aria-label="Expenses pagination">
+            <ul class="pagination justify-content-center">
+                {% if expenses.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('expenses.index', page=expenses.prev_num, category=selected_category, date_from=date_from, date_to=date_to) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in expenses.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != expenses.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('expenses.index', page=page_num, category=selected_category, date_from=date_from, date_to=date_to) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if expenses.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('expenses.index', page=expenses.next_num, category=selected_category, date_from=date_from, date_to=date_to) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No expenses found</h5>
+            <p class="text-muted">Start by adding your first expense record.</p>
+            <a href="{{ url_for('expenses.add_expense') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add New Expense
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the expense: <strong id="expenseDescription"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function deleteExpense(expenseId, expenseDescription) {
+    document.getElementById('expenseDescription').textContent = expenseDescription;
+    document.getElementById('deleteForm').action = "{{ url_for('expenses.delete_expense', expense_id=0) }}".replace('0', expenseId);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

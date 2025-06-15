@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Report - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2"></i>Sales Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Period Selection -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="period" class="form-label">Period</label>
+                <select class="form-select" id="period" name="period" onchange="toggleCustomDates()">
+                    <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>Custom Range</option>
+                </select>
+            </div>
+            <div class="col-md-3" id="dateFromDiv" style="display: {% if period == 'custom' %}block{% else %}none{% endif %};">
+                <label for="date_from" class="form-label">From Date</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3" id="dateToDiv" style="display: {% if period == 'custom' %}block{% else %}none{% endif %};">
+                <label for="date_to" class="form-label">To Date</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-chart-line me-2"></i>Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title">Total Sales</h6>
+                        <h3 class="mb-0">{{ total_sales }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title">Total Revenue</h6>
+                        <h3 class="mb-0">{{ total_revenue|currency }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title">Average Sale</h6>
+                        <h3 class="mb-0">{{ (total_revenue / total_sales)|currency if total_sales > 0 else '0.00'|currency }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Payment Method Breakdown -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Payment Method Breakdown</h5>
+            </div>
+            <div class="card-body">
+                {% if payment_breakdown %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th class="text-center">Count</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for method, count, total in payment_breakdown %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{% if method == 'cash' %}success{% else %}info{% endif %}">
+                                        {{ method.upper() }}
+                                    </span>
+                                </td>
+                                <td class="text-center">{{ count }}</td>
+                                <td class="text-end">{{ total|currency }}</td>
+                                <td class="text-end">{{ ((total / total_revenue) * 100)|round(1) if total_revenue > 0 else 0 }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No payment data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling Drugs -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Top Selling Drugs</h5>
+            </div>
+            <div class="card-body">
+                {% if top_drugs %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Drug Name</th>
+                                <th class="text-center">Qty Sold</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drug_name, quantity, revenue in top_drugs %}
+                            <tr>
+                                <td>{{ drug_name }}</td>
+                                <td class="text-center">{{ quantity }}</td>
+                                <td class="text-end">{{ revenue|currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No sales data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Sales Chart -->
+{% if daily_sales %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Daily Sales Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailySalesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCustomDates() {
+    const period = document.getElementById('period').value;
+    const dateFromDiv = document.getElementById('dateFromDiv');
+    const dateToDiv = document.getElementById('dateToDiv');
+    
+    if (period === 'custom') {
+        dateFromDiv.style.display = 'block';
+        dateToDiv.style.display = 'block';
+    } else {
+        dateFromDiv.style.display = 'none';
+        dateToDiv.style.display = 'none';
+    }
+}
+
+{% if daily_sales %}
+// Daily Sales Chart
+const dailySalesData = {
+    labels: [{% for date, total in daily_sales %}'{{ date.strftime('%m/%d') }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        label: 'Daily Sales (KES)',
+        data: [{% for date, total in daily_sales %}{{ total }}{% if not loop.last %},{% endif %}{% endfor %}],
+        borderColor: 'rgb(13, 110, 253)',
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        tension: 0.1
+    }]
+};
+
+const dailySalesConfig = {
+    type: 'line',
+    data: dailySalesData,
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'KES ' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+};
+
+new Chart(document.getElementById('dailySalesChart'), dailySalesConfig);
+{% endif %}
+</script>
+{% endblock %}

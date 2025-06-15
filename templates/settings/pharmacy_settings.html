@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Settings - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-store me-2"></i>Pharmacy Settings
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Basic Information -->
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2">Basic Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Pharmacy Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ pharmacy.name }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ pharmacy.email }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ pharmacy.phone or '' }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="mpesa_till" class="form-label">M-PESA Till Number</label>
+                            <input type="text" class="form-control" id="mpesa_till" name="mpesa_till" 
+                                   value="{{ pharmacy.mpesa_till }}"
+                                   placeholder="e.g., 123456">
+                            <div class="form-text">This will appear on receipts for customer payments</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3">{{ pharmacy.address or '' }}</textarea>
+                        </div>
+
+                        <!-- Receipt Settings -->
+                        <div class="col-12 mt-4">
+                            <h5 class="border-bottom pb-2">Receipt Settings</h5>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="receipt_footer" class="form-label">Receipt Footer</label>
+                            <textarea class="form-control" id="receipt_footer" name="receipt_footer" rows="3">{{ pharmacy.receipt_footer }}</textarea>
+                            <div class="form-text">This message will appear at the bottom of all receipts</div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="col-12 mt-4">
+                            <h6>Receipt Preview</h6>
+                            <div class="border rounded p-3 bg-light" style="font-family: 'Courier New', monospace; max-width: 300px;">
+                                <div class="text-center mb-2">
+                                    <strong id="preview-name">{{ pharmacy.name }}</strong><br>
+                                    <span id="preview-address">{{ pharmacy.address or 'Pharmacy Address' }}</span><br>
+                                    Phone: <span id="preview-phone">{{ pharmacy.phone or 'Phone Number' }}</span><br>
+                                    Email: <span id="preview-email">{{ pharmacy.email }}</span>
+                                </div>
+                                <hr>
+                                <div class="small">
+                                    Receipt #: RCP20250615ABC123<br>
+                                    Date: 15/06/2025 14:30<br><br>
+                                    Sample Drug x 2 ........... KES 100.00<br>
+                                    Another Drug x 1 ......... KES 50.00<br>
+                                    <hr>
+                                    Total: KES 150.00<br>
+                                    Payment: CASH
+                                </div>
+                                <hr>
+                                <div class="text-center small">
+                                    M-PESA: <span id="preview-till">{{ pharmacy.mpesa_till }}</span><br>
+                                    <span id="preview-footer">{{ pharmacy.receipt_footer }}</span><br>
+                                    Powered by Comolor Pharmacy
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                        <a href="{{ url_for('settings.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Live preview updates
+function updatePreview() {
+    document.getElementById('preview-name').textContent = document.getElementById('name').value || 'Pharmacy Name';
+    document.getElementById('preview-address').textContent = document.getElementById('address').value || 'Pharmacy Address';
+    document.getElementById('preview-phone').textContent = document.getElementById('phone').value || 'Phone Number';
+    document.getElementById('preview-email').textContent = document.getElementById('email').value || 'Email Address';
+    document.getElementById('preview-till').textContent = document.getElementById('mpesa_till').value || 'Till Number';
+    document.getElementById('preview-footer').textContent = document.getElementById('receipt_footer').value || 'Thank you for your business!';
+}
+
+// Add event listeners for live preview
+['name', 'address', 'phone', 'email', 'mpesa_till', 'receipt_footer'].forEach(function(fieldId) {
+    document.getElementById(fieldId).addEventListener('input', updatePreview);
+});
+</script>
+{% endblock %}

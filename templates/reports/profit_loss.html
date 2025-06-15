@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Profit & Loss Report - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calculator me-2"></i>Profit & Loss Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Period Selection -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="period" class="form-label">Period</label>
+                <select class="form-select" id="period" name="period">
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
+                    <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>This Quarter</option>
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>This Year</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-calculator me-2"></i>Generate P&L
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- P&L Statement -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Profit & Loss Statement</h5>
+        <small class="text-muted">{{ start_date|date }} to {{ end_date|date }}</small>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                    <!-- Revenue Section -->
+                    <tr class="table-light">
+                        <td colspan="2"><strong>REVENUE</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-4">Sales Revenue</td>
+                        <td class="text-end">{{ revenue|currency }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td><strong>Total Revenue</strong></td>
+                        <td class="text-end"><strong>{{ revenue|currency }}</strong></td>
+                    </tr>
+                    
+                    <!-- Cost of Goods Sold -->
+                    <tr class="table-light">
+                        <td colspan="2"><strong>COST OF GOODS SOLD</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-4">Cost of Drugs Sold</td>
+                        <td class="text-end">{{ cogs|currency }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td><strong>Total COGS</strong></td>
+                        <td class="text-end"><strong>{{ cogs|currency }}</strong></td>
+                    </tr>
+                    
+                    <!-- Gross Profit -->
+                    <tr class="table-success">
+                        <td><strong>GROSS PROFIT</strong></td>
+                        <td class="text-end"><strong>{{ gross_profit|currency }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-4 small text-muted">Gross Margin</td>
+                        <td class="text-end small text-muted">{{ gross_margin|round(2) }}%</td>
+                    </tr>
+                    
+                    <!-- Operating Expenses -->
+                    <tr class="table-light">
+                        <td colspan="2"><strong>OPERATING EXPENSES</strong></td>
+                    </tr>
+                    {% for category, total in expense_breakdown %}
+                    <tr>
+                        <td class="ps-4">{{ category }}</td>
+                        <td class="text-end">{{ total|currency }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="border-bottom">
+                        <td><strong>Total Operating Expenses</strong></td>
+                        <td class="text-end"><strong>{{ expenses|currency }}</strong></td>
+                    </tr>
+                    
+                    <!-- Net Profit -->
+                    <tr class="table-{% if net_profit >= 0 %}success{% else %}danger{% endif %}">
+                        <td><strong>NET PROFIT</strong></td>
+                        <td class="text-end"><strong>{{ net_profit|currency }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-4 small text-muted">Net Margin</td>
+                        <td class="text-end small text-muted">{{ net_margin|round(2) }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mt-4 g-4">
+    <div class="col-md-3">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                <h6>Revenue</h6>
+                <h4 class="text-primary">{{ revenue|currency }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                <h6>Gross Profit</h6>
+                <h4 class="text-success">{{ gross_profit|currency }}</h4>
+                <small class="text-muted">{{ gross_margin|round(1) }}% margin</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-warning">
+            <div class="card-body">
+                <i class="fas fa-receipt fa-2x text-warning mb-2"></i>
+                <h6>Total Expenses</h6>
+                <h4 class="text-warning">{{ expenses|currency }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-{% if net_profit >= 0 %}success{% else %}danger{% endif %}">
+            <div class="card-body">
+                <i class="fas fa-{% if net_profit >= 0 %}arrow-up{% else %}arrow-down{% endif %} fa-2x text-{% if net_profit >= 0 %}success{% else %}danger{% endif %} mb-2"></i>
+                <h6>Net Profit</h6>
+                <h4 class="text-{% if net_profit >= 0 %}success{% else %}danger{% endif %}">{{ net_profit|currency }}</h4>
+                <small class="text-muted">{{ net_margin|round(1) }}% margin</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expense Breakdown Chart -->
+{% if expense_breakdown %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expenseChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if expense_breakdown %}
+<script>
+// Expense Breakdown Chart
+const expenseData = {
+    labels: [{% for category, total in expense_breakdown %}'{{ category }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        data: [{% for category, total in expense_breakdown %}{{ total }}{% if not loop.last %},{% endif %}{% endfor %}],
+        backgroundColor: [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+        ]
+    }]
+};
+
+const expenseConfig = {
+    type: 'doughnut',
+    data: expenseData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': KES ' + context.parsed.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+};
+
+new Chart(document.getElementById('expenseChart'), expenseConfig);
+</script>
+{% endif %}
+{% endblock %}

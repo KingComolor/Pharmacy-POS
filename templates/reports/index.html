@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-bar me-2"></i>Reports & Analytics</h2>
+</div>
+
+<div class="row g-4">
+    <!-- Sales Reports -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Sales Report</h5>
+                <p class="card-text">View sales performance by day, week, or month. Track revenue and payment methods.</p>
+                <a href="{{ url_for('reports.sales_report') }}" class="btn btn-primary">
+                    <i class="fas fa-chart-line me-2"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit & Loss -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-calculator fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Profit & Loss</h5>
+                <p class="card-text">Analyze your profitability with detailed P&L statements including expenses.</p>
+                <a href="{{ url_for('reports.profit_loss') }}" class="btn btn-success">
+                    <i class="fas fa-calculator me-2"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiring Drugs -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Expiring Drugs</h5>
+                <p class="card-text">Monitor drugs approaching expiry dates to minimize losses.</p>
+                <a href="{{ url_for('reports.expiring_drugs') }}" class="btn btn-warning">
+                    <i class="fas fa-clock me-2"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Valuation -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-info">
+            <div class="card-body text-center">
+                <i class="fas fa-boxes fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Stock Valuation</h5>
+                <p class="card-text">Calculate the total value of your inventory at purchase and selling prices.</p>
+                <a href="{{ url_for('reports.stock_valuation') }}" class="btn btn-info">
+                    <i class="fas fa-boxes me-2"></i>View Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Quick Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4 text-center">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                            <h6>Sales Trends</h6>
+                            <p class="small text-muted">Track daily and monthly sales performance</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                            <h6>Profitability</h6>
+                            <p class="small text-muted">Monitor gross and net profit margins</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                            <h6>Inventory Alerts</h6>
+                            <p class="small text-muted">Get alerts for expiring and low stock items</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-chart-pie fa-2x text-info mb-2"></i>
+                            <h6>Asset Management</h6>
+                            <p class="small text-muted">Track inventory value and turnover rates</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

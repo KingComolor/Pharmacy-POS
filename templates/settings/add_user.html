@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Add User - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Add New User
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Personal Information -->
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2">Personal Information</h6>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+
+                        <!-- Account Information -->
+                        <div class="col-12 mt-4">
+                            <h6 class="border-bottom pb-2">Account Information</h6>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="role" class="form-label">Role *</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="pharmacist">Pharmacist</option>
+                                <option value="cashier">Cashier</option>
+                            </select>
+                            <div class="form-text">
+                                <strong>Pharmacist:</strong> Full access to inventory, sales, and reports<br>
+                                <strong>Cashier:</strong> Point of sale and customer management only
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                            <div class="form-text">Minimum 6 characters</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="confirm_password" class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add User
+                        </button>
+                        <a href="{{ url_for('settings.users') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('blur', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Passwords do not match');
+        this.classList.add('is-invalid');
+    } else {
+        this.setCustomValidity('');
+        this.classList.remove('is-invalid');
+    }
+});
+
+document.getElementById('password').addEventListener('input', function() {
+    const confirmPassword = document.getElementById('confirm_password');
+    if (confirmPassword.value) {
+        confirmPassword.dispatchEvent(new Event('blur'));
+    }
+});
+</script>
+{% endblock %}

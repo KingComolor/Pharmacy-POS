@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}License Payment - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-credit-card fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title">License Payment Required</h4>
+                    {% if license and license.status == 'pending' %}
+                    <p class="text-muted">Your license is pending activation. Please complete payment to continue.</p>
+                    {% else %}
+                    <p class="text-muted">Your license has expired. Please renew to continue using the system.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Payment Instructions -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-mobile-alt me-2"></i>M-PESA Payment Instructions</h6>
+                    <ol class="mb-0">
+                        <li>Go to M-PESA menu on your phone</li>
+                        <li>Select "Lipa na M-PESA"</li>
+                        <li>Select "Buy Goods and Services"</li>
+                        <li>Enter Till Number: <strong>123456</strong></li>
+                        <li>Enter Amount: <strong>KES 3,000</strong></li>
+                        <li>Complete the transaction</li>
+                        <li>Enter the M-PESA code below</li>
+                    </ol>
+                </div>
+
+                <!-- Payment Form -->
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="mpesa_code" class="form-label">M-PESA Transaction Code *</label>
+                        <input type="text" class="form-control" id="mpesa_code" name="mpesa_code" 
+                               placeholder="e.g., QA12345678" required>
+                        <div class="form-text">Enter the confirmation code from your M-PESA message</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number Used for Payment *</label>
+                        <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                               placeholder="254700000000" required>
+                        <div class="form-text">Enter the phone number used for M-PESA payment</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Payment Summary</h6>
+                                <div class="d-flex justify-content-between">
+                                    <span>Monthly License Fee:</span>
+                                    <strong>KES 3,000</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Till Number:</span>
+                                    <strong>123456</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>License Duration:</span>
+                                    <strong>30 Days</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Submit Payment Details
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>Note:</strong> License activation requires manual verification by our admin team. 
+                            This typically takes 1-2 hours during business hours (8 AM - 6 PM, Monday - Friday).
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

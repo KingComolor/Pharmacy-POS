@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Settings</h2>
+</div>
+
+<div class="row g-4">
+    <!-- Pharmacy Information -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-store me-2"></i>Pharmacy Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Pharmacy Name:</strong><br>
+                            {{ pharmacy.name }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Email:</strong><br>
+                            {{ pharmacy.email }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Phone:</strong><br>
+                            {{ pharmacy.phone }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Address:</strong><br>
+                            {{ pharmacy.address or 'Not provided' }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>M-PESA Till:</strong><br>
+                            {{ pharmacy.mpesa_till }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Member Since:</strong><br>
+                            {{ pharmacy.created_at|date }}
+                        </div>
+                    </div>
+                </div>
+                {% if current_user.role == 'admin' %}
+                <div class="mt-3">
+                    <a href="{{ url_for('settings.pharmacy_settings') }}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Pharmacy Details
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- License Status -->
+    <div class="col-lg-4">
+        <div class="card border-{% if license and license.status == 'active' %}success{% else %}warning{% endif %}">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-certificate me-2"></i>License Status</h6>
+            </div>
+            <div class="card-body">
+                {% if license %}
+                <div class="text-center">
+                    <div class="mb-3">
+                        <span class="badge bg-{% if license.status == 'active' %}success{% elif license.status == 'pending' %}warning{% else %}danger{% endif %} fs-6">
+                            {{ license.status.upper() }}
+                        </span>
+                    </div>
+                    {% if license.status == 'active' %}
+                    <div class="mb-2">
+                        <strong>Expires:</strong><br>
+                        {{ license.expiry_date|date }}
+                        {% if license.is_expired() %}
+                        <br><small class="text-danger">EXPIRED</small>
+                        {% else %}
+                        <br><small class="text-muted">{{ (license.expiry_date - moment().date()).days }} days left</small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="mb-2">
+                        <strong>License Fee:</strong><br>
+                        {{ license.amount|currency }}
+                    </div>
+                </div>
+                {% if license.status != 'active' or license.is_expired() %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('auth.pay_license') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-credit-card me-1"></i>Renew License
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center">
+                    <p class="text-muted">No license information available</p>
+                    <a href="{{ url_for('auth.pay_license') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-credit-card me-1"></i>Get License
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Settings -->
+<div class="row mt-4 g-4">
+    {% if current_user.role == 'admin' %}
+    <!-- User Management -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">User Management</h5>
+                <p class="card-text">Manage pharmacy staff accounts and permissions.</p>
+                <a href="{{ url_for('settings.users') }}" class="btn btn-primary">
+                    <i class="fas fa-users me-2"></i>Manage Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pharmacy Settings -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-store fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Pharmacy Settings</h5>
+                <p class="card-text">Update pharmacy details, receipt footer, and M-PESA till.</p>
+                <a href="{{ url_for('settings.pharmacy_settings') }}" class="btn btn-success">
+                    <i class="fas fa-store me-2"></i>Edit Settings
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Change Password -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-key fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Change Password</h5>
+                <p class="card-text">Update your account password for security.</p>
+                <a href="{{ url_for('settings.change_password') }}" class="btn btn-warning">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-server fa-2x text-info mb-2"></i>
+                            <h6>System Version</h6>
+                            <p class="text-muted">Comolor Pharmacy v1.0</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-headset fa-2x text-info mb-2"></i>
+                            <h6>Support</h6>
+                            <p class="text-muted">admin@comolor.com</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt fa-2x text-info mb-2"></i>
+                            <h6>Security</h6>
+                            <p class="text-muted">SSL Encrypted</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

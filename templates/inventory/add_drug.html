@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}{% if drug %}Edit Drug{% else %}Add Drug{% endif %} - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-{% if drug %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if drug %}Edit Drug{% else %}Add New Drug{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Basic Information -->
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2">Basic Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Drug Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ drug.name if drug else '' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="category" name="category" 
+                                   value="{{ drug.category if drug else '' }}" 
+                                   placeholder="e.g., Antibiotics, Pain Relief">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="batch_number" class="form-label">Batch Number</label>
+                            <input type="text" class="form-control" id="batch_number" name="batch_number" 
+                                   value="{{ drug.batch_number if drug else '' }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="barcode" class="form-label">Barcode</label>
+                            <input type="text" class="form-control" id="barcode" name="barcode" 
+                                   value="{{ drug.barcode if drug else '' }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ drug.description if drug else '' }}</textarea>
+                        </div>
+
+                        <!-- Stock Information -->
+                        <div class="col-12 mt-4">
+                            <h5 class="border-bottom pb-2">Stock Information</h5>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="quantity" class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" 
+                                   value="{{ drug.quantity if drug else 0 }}" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="reorder_level" class="form-label">Reorder Level</label>
+                            <input type="number" class="form-control" id="reorder_level" name="reorder_level" 
+                                   value="{{ drug.reorder_level if drug else 10 }}" min="0">
+                            <div class="form-text">Alert when stock falls below this level</div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="expiry_date" class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiry_date" name="expiry_date" 
+                                   value="{{ drug.expiry_date.strftime('%Y-%m-%d') if drug and drug.expiry_date else '' }}">
+                        </div>
+
+                        <!-- Pricing Information -->
+                        <div class="col-12 mt-4">
+                            <h5 class="border-bottom pb-2">Pricing Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="purchase_price" class="form-label">Purchase Price (KES) *</label>
+                            <input type="number" class="form-control" id="purchase_price" name="purchase_price" 
+                                   value="{{ drug.purchase_price if drug else '' }}" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="selling_price" class="form-label">Selling Price (KES) *</label>
+                            <input type="number" class="form-control" id="selling_price" name="selling_price" 
+                                   value="{{ drug.selling_price if drug else '' }}" step="0.01" min="0" required>
+                            <div id="profit-margin" class="form-text"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if drug %}Update Drug{% else %}Add Drug{% endif %}
+                        </button>
+                        <a href="{{ url_for('inventory.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function calculateProfitMargin() {
+    const purchasePrice = parseFloat(document.getElementById('purchase_price').value) || 0;
+    const sellingPrice = parseFloat(document.getElementById('selling_price').value) || 0;
+    const profitMarginElement = document.getElementById('profit-margin');
+    
+    if (purchasePrice > 0 && sellingPrice > 0) {
+        const profit = sellingPrice - purchasePrice;
+        const margin = (profit / purchasePrice * 100).toFixed(2);
+        profitMarginElement.textContent = `Profit: KES ${profit.toFixed(2)} (${margin}% margin)`;
+        profitMarginElement.className = profit >= 0 ? 'form-text text-success' : 'form-text text-danger';
+    } else {
+        profitMarginElement.textContent = '';
+    }
+}
+
+document.getElementById('purchase_price').addEventListener('input', calculateProfitMargin);
+document.getElementById('selling_price').addEventListener('input', calculateProfitMargin);
+
+// Calculate initial margin if editing
+calculateProfitMargin();
+</script>
+{% endblock %}

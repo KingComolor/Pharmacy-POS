@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Valuation Report - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes me-2"></i>Stock Valuation Report</h2>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+    </a>
+</div>
+
+<!-- Category Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="category" class="form-label">Filter by Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+                <a href="{{ url_for('reports.stock_valuation') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-primary">Purchase Value</h6>
+                        <h3 class="mb-1">{{ total_purchase_value|currency }}</h3>
+                        <small class="text-muted">Cost of current stock</small>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-shopping-cart fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-success">Selling Value</h6>
+                        <h3 class="mb-1">{{ total_selling_value|currency }}</h3>
+                        <small class="text-muted">Potential revenue</small>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-money-bill-wave fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-info">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-info">Potential Profit</h6>
+                        <h3 class="mb-1">{{ potential_profit|currency }}</h3>
+                        <small class="text-muted">{{ ((potential_profit / total_purchase_value) * 100)|round(1) if total_purchase_value > 0 else 0 }}% margin</small>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Breakdown -->
+{% if category_breakdown %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Category Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th class="text-center">Items</th>
+                        <th class="text-end">Purchase Value</th>
+                        <th class="text-end">Selling Value</th>
+                        <th class="text-end">Potential Profit</th>
+                        <th class="text-end">Margin %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, purchase_value, selling_value, drug_count in category_breakdown %}
+                    {% set profit = selling_value - purchase_value %}
+                    <tr>
+                        <td>{{ category or 'Uncategorized' }}</td>
+                        <td class="text-center">{{ drug_count }}</td>
+                        <td class="text-end">{{ purchase_value|currency }}</td>
+                        <td class="text-end">{{ selling_value|currency }}</td>
+                        <td class="text-end">{{ profit|currency }}</td>
+                        <td class="text-end">{{ ((profit / purchase_value) * 100)|round(1) if purchase_value > 0 else 0 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Detailed Stock List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Detailed Stock Valuation</h5>
+        {% if selected_category %}
+        <small class="text-muted">Category: {{ selected_category }}</small>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if drugs %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Drug Name</th>
+                        <th>Category</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Purchase Price</th>
+                        <th class="text-end">Selling Price</th>
+                        <th class="text-end">Purchase Value</th>
+                        <th class="text-end">Selling Value</th>
+                        <th class="text-end">Profit</th>
+                        <th class="text-end">Margin %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drug in drugs %}
+                    {% set purchase_value = drug.quantity * drug.purchase_price %}
+                    {% set selling_value = drug.quantity * drug.selling_price %}
+                    {% set profit = selling_value - purchase_value %}
+                    <tr>
+                        <td>
+                            <strong>{{ drug.name }}</strong>
+                            {% if drug.batch_number %}
+                            <br><small class="text-muted">Batch: {{ drug.batch_number }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ drug.category or '-' }}</td>
+                        <td class="text-center">{{ drug.quantity }}</td>
+                        <td class="text-end">{{ drug.purchase_price|currency }}</td>
+                        <td class="text-end">{{ drug.selling_price|currency }}</td>
+                        <td class="text-end">{{ purchase_value|currency }}</td>
+                        <td class="text-end">{{ selling_value|currency }}</td>
+                        <td class="text-end">{{ profit|currency }}</td>
+                        <td class="text-end">{{ ((profit / purchase_value) * 100)|round(1) if purchase_value > 0 else 0 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="5">Total</th>
+                        <th class="text-end">{{ total_purchase_value|currency }}</th>
+                        <th class="text-end">{{ total_selling_value|currency }}</th>
+                        <th class="text-end">{{ potential_profit|currency }}</th>
+                        <th class="text-end">{{ ((potential_profit / total_purchase_value) * 100)|round(1) if total_purchase_value > 0 else 0 }}%</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-boxes fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No stock found</h5>
+            <p class="text-muted">
+                {% if selected_category %}
+                No drugs found in the "{{ selected_category }}" category.
+                {% else %}
+                No drugs in inventory.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

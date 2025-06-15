@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Comolor Pharmacy{% endblock %}
+
+{% block extra_head %}
+<style>
+.stat-card {
+    border-left: 4px solid;
+    transition: transform 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+.stat-card.primary { border-left-color: #0d6efd; }
+.stat-card.success { border-left-color: #198754; }
+.stat-card.warning { border-left-color: #ffc107; }
+.stat-card.danger { border-left-color: #dc3545; }
+.stat-card.info { border-left-color: #0dcaf0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+    <div class="text-muted">
+        <i class="fas fa-calendar me-1"></i>{{ moment().format('dddd, MMMM DD, YYYY') }}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card primary h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">Total Drugs</h6>
+                        <h3 class="mb-0">{{ stats.total_drugs }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card danger h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">Low Stock</h6>
+                        <h3 class="mb-0">{{ stats.low_stock }}</h3>
+                    </div>
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card warning h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">Expiring Soon</h6>
+                        <h3 class="mb-0">{{ stats.expiring_drugs }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card info h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">Total Customers</h6>
+                        <h3 class="mb-0">{{ stats.total_customers }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sales Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card stat-card success h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">Today's Sales</h6>
+                        <h3 class="mb-0">{{ stats.today_sales|currency }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card stat-card primary h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-muted mb-1">This Month's Sales</h6>
+                        <h3 class="mb-0">{{ stats.month_sales|currency }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-calendar-month fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Sales -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Recent Sales</h5>
+                <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_sales %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Receipt #</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in recent_sales %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('sales.receipt', sale_id=sale.id) }}" class="text-decoration-none">
+                                        {{ sale.receipt_number }}
+                                    </a>
+                                </td>
+                                <td>{{ sale.total_amount|currency }}</td>
+                                <td>{{ sale.created_at|datetime }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No recent sales</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Alerts</h5>
+            </div>
+            <div class="card-body">
+                <!-- Low Stock Alerts -->
+                {% if low_stock_drugs %}
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Low Stock Items</h6>
+                    {% for drug in low_stock_drugs[:5] %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ drug.name }}</span>
+                        <small class="text-muted">{{ drug.quantity }} left</small>
+                    </div>
+                    {% endfor %}
+                    {% if low_stock_drugs|length > 5 %}
+                    <small class="text-muted">...and {{ low_stock_drugs|length - 5 }} more</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Expiring Drugs -->
+                {% if expiring_drugs %}
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">Expiring Soon</h6>
+                    {% for drug in expiring_drugs[:5] %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ drug.name }}</span>
+                        <small class="text-muted">{{ drug.expiry_date|date }}</small>
+                    </div>
+                    {% endfor %}
+                    {% if expiring_drugs|length > 5 %}
+                    <small class="text-muted">...and {{ expiring_drugs|length - 5 }} more</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if not low_stock_drugs and not expiring_drugs %}
+                <p class="text-muted text-center mb-0">No alerts at this time</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('sales.pos') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-cash-register me-2"></i>New Sale
+                        </a>
+                    </div>
+                    {% if current_user.role in ['admin', 'pharmacist'] %}
+                    <div class="col-md-3">
+                        <a href="{{ url_for('inventory.add_drug') }}" class="btn btn-success w-100">
+                            <i class="fas fa-plus me-2"></i>Add Drug
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-3">
+                        <a href="{{ url_for('customers.add_customer') }}" class="btn btn-info w-100">
+                            <i class="fas fa-user-plus me-2"></i>Add Customer
+                        </a>
+                    </div>
+                    {% if current_user.role in ['admin', 'pharmacist'] %}
+                    <div class="col-md-3">
+                        <a href="{{ url_for('reports.sales_report') }}" class="btn btn-warning w-100">
+                            <i class="fas fa-chart-bar me-2"></i>View Reports
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

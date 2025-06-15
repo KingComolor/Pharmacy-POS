@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="hero-section text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-pills display-1 text-primary"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">Comolor Pharmacy</h1>
+            <p class="lead mb-4">Complete Pharmacy Management System for Kenyan Chemists</p>
+            <p class="mb-4">Manage your inventory, sales, customers, and prescriptions with our comprehensive pharmacy management solution.</p>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Inventory Management</h5>
+                        <p class="card-text">Track drug stock, expiry dates, and get low stock alerts.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cash-register fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Point of Sale</h5>
+                        <p class="card-text">Easy-to-use POS system with receipt printing and M-PESA integration.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Customer Management</h5>
+                        <p class="card-text">Maintain customer records and track purchase history.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Reports & Analytics</h5>
+                        <p class="card-text">Comprehensive reports for sales, profit/loss, and stock valuation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="text-center">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h4 class="card-title">Ready to Get Started?</h4>
+                    <p class="card-text mb-4">Join hundreds of Kenyan pharmacies already using our system.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-user-plus me-2"></i>Register Your Pharmacy
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Info -->
+        <div class="alert alert-info mt-4" role="alert">
+            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Affordable Monthly Licensing</h5>
+            <p class="mb-0">Only <strong>KES 3,000</strong> per month. Pay easily via M-PESA Till Number: <strong>123456</strong></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

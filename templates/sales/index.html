@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Sales History - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-receipt me-2"></i>Sales History</h2>
+    <a href="{{ url_for('sales.pos') }}" class="btn btn-primary">
+        <i class="fas fa-cash-register me-2"></i>New Sale
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="date_from" class="form-label">Date From</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_to" class="form-label">Date To</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-filter me-1"></i>Filter
+                </button>
+                <a href="{{ url_for('sales.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sales Table -->
+<div class="card">
+    <div class="card-body">
+        {% if sales.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Receipt #</th>
+                        <th>Customer</th>
+                        <th>Cashier</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales.items %}
+                    <tr>
+                        <td>
+                            <strong>{{ sale.receipt_number }}</strong>
+                            {% if sale.prescription_number %}
+                            <br><small class="text-muted">Rx: {{ sale.prescription_number }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sale.customer %}
+                            <a href="{{ url_for('customers.view_customer', customer_id=sale.customer.id) }}" 
+                               class="text-decoration-none">
+                                {{ sale.customer.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">Walk-in Customer</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ sale.cashier.first_name }} {{ sale.cashier.last_name }}</td>
+                        <td>{{ sale.total_amount|currency }}</td>
+                        <td>
+                            <span class="badge bg-{% if sale.payment_method == 'cash' %}success{% else %}info{% endif %}">
+                                {{ sale.payment_method.upper() }}
+                            </span>
+                            {% if sale.mpesa_reference %}
+                            <br><small class="text-muted">{{ sale.mpesa_reference }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ sale.created_at|datetime }}</td>
+                        <td>
+                            <a href="{{ url_for('sales.receipt', sale_id=sale.id) }}" 
+                               class="btn btn-sm btn-outline-primary" title="View Receipt">
+                                <i class="fas fa-receipt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if sales.pages > 1 %}
+        <nav aria-label="Sales pagination">
+            <ul class="pagination justify-content-center">
+                {% if sales.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('sales.index', page=sales.prev_num, date_from=date_from, date_to=date_to) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in sales.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != sales.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('sales.index', page=page_num, date_from=date_from, date_to=date_to) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if sales.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('sales.index', page=sales.next_num, date_from=date_from, date_to=date_to) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No sales found</h5>
+            <p class="text-muted">Sales will appear here once you start making transactions.</p>
+            <a href="{{ url_for('sales.pos') }}" class="btn btn-primary">
+                <i class="fas fa-cash-register me-2"></i>Start Selling
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

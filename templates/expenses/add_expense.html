@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}{% if expense %}Edit Expense{% else %}Add Expense{% endif %} - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-{% if expense %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if expense %}Edit Expense{% else %}Add New Expense{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category *</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                {% for cat in common_categories %}
+                                <option value="{{ cat }}" {% if expense and expense.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Or type a custom category</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="custom_category" class="form-label">Custom Category</label>
+                            <input type="text" class="form-control" id="custom_category" name="custom_category" 
+                                   placeholder="Enter custom category">
+                            <div class="form-text">Leave blank to use selected category</div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description *</label>
+                            <input type="text" class="form-control" id="description" name="description" 
+                                   value="{{ expense.description if expense else '' }}" required
+                                   placeholder="Brief description of the expense">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label">Amount (KES) *</label>
+                            <input type="number" class="form-control" id="amount" name="amount" 
+                                   value="{{ expense.amount if expense else '' }}" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">Date *</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ expense.date.strftime('%Y-%m-%d') if expense else '' }}" required>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="receipt_number" class="form-label">Receipt Number</label>
+                            <input type="text" class="form-control" id="receipt_number" name="receipt_number" 
+                                   value="{{ expense.receipt_number if expense else '' }}"
+                                   placeholder="Receipt or reference number (optional)">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if expense %}Update Expense{% else %}Add Expense{% endif %}
+                        </button>
+                        <a href="{{ url_for('expenses.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Handle custom category selection
+document.getElementById('category').addEventListener('change', function() {
+    const customCategoryInput = document.getElementById('custom_category');
+    if (this.value === '') {
+        customCategoryInput.disabled = false;
+        customCategoryInput.focus();
+    } else {
+        customCategoryInput.disabled = true;
+        customCategoryInput.value = '';
+    }
+});
+
+document.getElementById('custom_category').addEventListener('input', function() {
+    const categorySelect = document.getElementById('category');
+    if (this.value.trim() !== '') {
+        categorySelect.disabled = true;
+        categorySelect.value = '';
+    } else {
+        categorySelect.disabled = false;
+    }
+});
+
+// Set today's date as default
+if (!document.getElementById('date').value) {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+}
+
+// Form submission - handle custom category
+document.querySelector('form').addEventListener('submit', function(e) {
+    const categorySelect = document.getElementById('category');
+    const customCategory = document.getElementById('custom_category');
+    
+    if (customCategory.value.trim() !== '') {
+        // Use custom category
+        categorySelect.value = customCategory.value.trim();
+    }
+    
+    if (!categorySelect.value) {
+        e.preventDefault();
+        alert('Please select or enter a category.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

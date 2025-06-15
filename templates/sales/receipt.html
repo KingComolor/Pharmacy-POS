@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt {{ sale.receipt_number }} - Comolor Pharmacy{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .container-fluid { max-width: none !important; }
+    body { font-size: 12px; }
+}
+.receipt {
+    max-width: 400px;
+    margin: 0 auto;
+    font-family: 'Courier New', monospace;
+}
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.receipt-footer {
+    text-align: center;
+    border-top: 2px solid #000;
+    padding-top: 10px;
+    margin-top: 15px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="no-print mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="fas fa-receipt me-2"></i>Receipt Details</h2>
+        <div>
+            <button type="button" class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print Receipt
+            </button>
+            <a href="{{ url_for('sales.pos') }}" class="btn btn-success">
+                <i class="fas fa-cash-register me-2"></i>New Sale
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="receipt bg-white p-4 border">
+    <!-- Header -->
+    <div class="receipt-header">
+        <h4 class="mb-1">{{ sale.pharmacy.name }}</h4>
+        {% if sale.pharmacy.address %}
+        <p class="mb-1">{{ sale.pharmacy.address }}</p>
+        {% endif %}
+        <p class="mb-1">Phone: {{ sale.pharmacy.phone }}</p>
+        <p class="mb-0">Email: {{ sale.pharmacy.email }}</p>
+    </div>
+
+    <!-- Receipt Info -->
+    <div class="mb-3">
+        <div class="row">
+            <div class="col-6">
+                <strong>Receipt #:</strong><br>
+                {{ sale.receipt_number }}
+            </div>
+            <div class="col-6 text-end">
+                <strong>Date:</strong><br>
+                {{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Info -->
+    {% if sale.customer %}
+    <div class="mb-3">
+        <strong>Customer:</strong><br>
+        {{ sale.customer.name }}<br>
+        {% if sale.customer.phone %}{{ sale.customer.phone }}<br>{% endif %}
+        {% if sale.customer.id_number %}ID: {{ sale.customer.id_number }}{% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Prescription Info -->
+    {% if sale.prescription_number %}
+    <div class="mb-3">
+        <strong>Prescription #:</strong> {{ sale.prescription_number }}
+    </div>
+    {% endif %}
+
+    <!-- Items -->
+    <div class="mb-3">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sale.items %}
+                <tr>
+                    <td>{{ item.drug.name }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.unit_price|currency }}</td>
+                    <td class="text-end">{{ item.total_price|currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totals -->
+    <div class="mb-3">
+        <div class="d-flex justify-content-between">
+            <strong>Total Amount:</strong>
+            <strong>{{ sale.total_amount|currency }}</strong>
+        </div>
+    </div>
+
+    <!-- Payment Info -->
+    <div class="mb-3">
+        <div class="d-flex justify-content-between">
+            <span>Payment Method:</span>
+            <span>{{ sale.payment_method.upper() }}</span>
+        </div>
+        {% if sale.mpesa_reference %}
+        <div class="d-flex justify-content-between">
+            <span>M-PESA Ref:</span>
+            <span>{{ sale.mpesa_reference }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Cashier -->
+    <div class="mb-3">
+        <div class="d-flex justify-content-between">
+            <span>Served by:</span>
+            <span>{{ sale.cashier.first_name }} {{ sale.cashier.last_name }}</span>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if sale.notes %}
+    <div class="mb-3">
+        <strong>Notes:</strong><br>
+        {{ sale.notes }}
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="receipt-footer">
+        {% if sale.pharmacy.mpesa_till %}
+        <p class="mb-1">M-PESA Payments: Till {{ sale.pharmacy.mpesa_till }}</p>
+        {% endif %}
+        <p class="mb-1">{{ sale.pharmacy.receipt_footer or 'Thank you for your business!' }}</p>
+        <p class="mb-0">Powered by Comolor Pharmacy System</p>
+    </div>
+</div>
+
+<!-- Sale Summary for non-print view -->
+<div class="no-print mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Sale Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Receipt Number:</strong><br>
+                    {{ sale.receipt_number }}
+                </div>
+                <div class="col-md-4">
+                    <strong>Total Items:</strong><br>
+                    {{ sale.items|length }}
+                </div>
+                <div class="col-md-4">
+                    <strong>Total Amount:</strong><br>
+                    {{ sale.total_amount|currency }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

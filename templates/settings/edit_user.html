@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>Edit User: {{ user.first_name }} {{ user.last_name }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- Personal Information -->
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2">Personal Information</h6>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ user.first_name }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ user.last_name }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email }}" disabled>
+                            <div class="form-text">Email cannot be changed</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ user.phone or '' }}">
+                        </div>
+
+                        <!-- Account Information -->
+                        <div class="col-12 mt-4">
+                            <h6 class="border-bottom pb-2">Account Information</h6>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role *</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="pharmacist" {% if user.role == 'pharmacist' %}selected{% endif %}>Pharmacist</option>
+                                <option value="cashier" {% if user.role == 'cashier' %}selected{% endif %}>Cashier</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="is_active" class="form-label">Account Status</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                       {% if user.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    Active Account
+                                </label>
+                            </div>
+                            <div class="form-text">Inactive users cannot log in</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update User
+                        </button>
+                        <a href="{{ url_for('settings.users') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

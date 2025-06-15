@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title mb-4">Terms and Conditions</h2>
+                
+                <div class="mb-4">
+                    <h4>1. Service Description</h4>
+                    <p>Comolor Pharmacy Management System provides comprehensive pharmacy management software for Kenyan chemists and pharmacies. Our services include inventory management, point-of-sale systems, customer management, reporting, and licensing management.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>2. Monthly Licensing Fee</h4>
+                    <p>The monthly licensing fee is <strong>KES 3,000</strong> per pharmacy, payable in advance. Payment must be made via M-PESA to Till Number <strong>123456</strong>.</p>
+                    <p>License expires 30 days after activation. Expired licenses will result in system access being blocked until renewal.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>3. Payment Terms</h4>
+                    <ul>
+                        <li>All payments must be made via M-PESA to Till Number 123456</li>
+                        <li>Valid M-PESA transaction code and phone number must be provided</li>
+                        <li>License activation requires manual confirmation by system administrator</li>
+                        <li>No refunds will be provided for partial month usage</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h4>4. Data Storage and Security</h4>
+                    <p>Your pharmacy data is stored securely on our servers with industry-standard encryption. We implement appropriate security measures to protect your information from unauthorized access, alteration, disclosure, or destruction.</p>
+                    <p>You retain ownership of all data entered into the system. We do not share your data with third parties without your explicit consent.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>5. System Access</h4>
+                    <p>Access to the system is restricted to licensed pharmacies with active subscriptions. Each pharmacy can only access their own data and cannot view information from other pharmacies.</p>
+                    <p>You are responsible for maintaining the confidentiality of your login credentials.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>6. User Responsibilities</h4>
+                    <ul>
+                        <li>Ensure accurate data entry and inventory management</li>
+                        <li>Comply with all applicable pharmacy regulations and laws</li>
+                        <li>Maintain valid pharmacy licenses and certifications</li>
+                        <li>Keep login credentials secure and confidential</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h4>7. Service Availability</h4>
+                    <p>We strive to maintain 99% uptime but cannot guarantee uninterrupted service. Scheduled maintenance will be communicated in advance when possible.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>8. Refund Policy</h4>
+                    <p>Refunds are not provided for subscription fees. If you cancel your subscription, you will retain access until the end of your current billing period.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>9. Termination</h4>
+                    <p>Either party may terminate this agreement with 30 days written notice. Upon termination, you will lose access to the system and should export any required data.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>10. Limitation of Liability</h4>
+                    <p>Our liability is limited to the amount paid for the service in the preceding 12 months. We are not liable for any indirect, incidental, or consequential damages.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>11. Changes to Terms</h4>
+                    <p>We reserve the right to modify these terms with 30 days notice. Continued use of the service constitutes acceptance of modified terms.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4>12. Contact Information</h4>
+                    <p>For questions about these terms, contact us at admin@comolor.com or call +254 700 000 000.</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted"><em>Last updated: {{ moment().format('MMMM DD, YYYY') }}</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

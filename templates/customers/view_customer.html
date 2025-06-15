@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.name }} - Customer Details - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user me-2"></i>{{ customer.name }}</h2>
+    <div>
+        <a href="{{ url_for('customers.edit_customer', customer_id=customer.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Edit Customer
+        </a>
+        <a href="{{ url_for('customers.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Customers
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Customer Information -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Customer Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Full Name:</strong><br>
+                    {{ customer.name }}
+                </div>
+                
+                {% if customer.phone %}
+                <div class="mb-3">
+                    <strong>Phone Number:</strong><br>
+                    <a href="tel:{{ customer.phone }}" class="text-decoration-none">{{ customer.phone }}</a>
+                </div>
+                {% endif %}
+                
+                {% if customer.email %}
+                <div class="mb-3">
+                    <strong>Email Address:</strong><br>
+                    <a href="mailto:{{ customer.email }}" class="text-decoration-none">{{ customer.email }}</a>
+                </div>
+                {% endif %}
+                
+                {% if customer.id_number %}
+                <div class="mb-3">
+                    <strong>ID Number:</strong><br>
+                    {{ customer.id_number }}
+                </div>
+                {% endif %}
+                
+                {% if customer.address %}
+                <div class="mb-3">
+                    <strong>Address:</strong><br>
+                    {{ customer.address }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-0">
+                    <strong>Registered:</strong><br>
+                    {{ customer.created_at|datetime }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Summary -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Purchase Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="mb-1">{{ purchases|length }}</h4>
+                        <small class="text-muted">Total Purchases</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="mb-1">{{ total_spent|currency }}</h4>
+                        <small class="text-muted">Total Spent</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase History -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Purchase History</h5>
+                <small class="text-muted">Last 20 purchases</small>
+            </div>
+            <div class="card-body">
+                {% if purchases %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Receipt #</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Payment</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for purchase in purchases %}
+                            <tr>
+                                <td>{{ purchase.receipt_number }}</td>
+                                <td>{{ purchase.created_at|datetime }}</td>
+                                <td>{{ purchase.total_amount|currency }}</td>
+                                <td>
+                                    <span class="badge bg-{% if purchase.payment_method == 'cash' %}success{% else %}info{% endif %}">
+                                        {{ purchase.payment_method.upper() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('sales.receipt', sale_id=purchase.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View Receipt">
+                                        <i class="fas fa-receipt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">No purchases yet</h6>
+                    <p class="text-muted">This customer hasn't made any purchases.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
