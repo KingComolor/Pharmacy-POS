@@ -1,0 +1,157 @@
+Build a complete **web-based Pharmacy Inventory & Sales System** called **Comolor Pharmacy**, using Python (Flask), HTML/CSS (Bootstrap), and `replit.db` (since Replit does not support PostgreSQL or SQLite). The system must run fully on Replit and later be portable to Render.
+
+---
+
+🌐 SYSTEM PURPOSE:
+This is a pharmacy sales and inventory system for Kenyan chemists and pharmacies. It should help manage:
+- Drug stock and expiry
+- Sales, prescriptions
+- Customers
+- Cashiers
+- Licensing and receipt generation
+
+The system must support **monthly licensing (KES 3,000)** and **auto license expiration**, paid via M-PESA **Till Number**.
+
+---
+
+🧠 TECH STACK:
+- Python Flask
+- HTML, CSS (Bootstrap)
+- JavaScript (optional for cart/UX)
+- `replit.db` for database
+- Flask-Login for authentication
+
+---
+
+🔐 USER ROLES:
+1. **Superadmin** (System Owner/Developer)
+2. **Admin** (Pharmacy Owner)
+3. **Pharmacist**
+4. **Cashier**
+
+All roles should be restricted to their business only, except Superadmin.
+
+---
+
+📝 REGISTRATION:
+- Input: pharmacy name, email, phone, password
+- Must accept Terms and Conditions (checkbox)
+- After registration, redirect to license payment page
+
+---
+
+📃 TERMS & CONDITIONS:
+- Shown on `/terms`
+- Must be accepted to register
+- Includes monthly fee (KES 3,000) payable to **Till Number 123456**
+- No access if license expires
+- Explain data storage and refund policies
+
+---
+
+💳 LICENSING SYSTEM:
+- On `/pay-license`, user inputs:
+  - M-PESA transaction code
+  - Phone number
+- Superadmin confirms manually via `/admin`
+- Store license status in `licenses:{pharmacy_id}` with 30-day expiry
+- Block access on expiry
+- Check license on every login and protected route
+
+---
+
+🕒 AUTO EXPIRY SYSTEM:
+- On every login or protected page:
+  - Check if current date > license expiry
+  - If expired: redirect to `/pay-license` with "License expired" message
+
+---
+
+📦 PHARMACY MODULES:
+
+1. **Inventory Management**
+   - Add/edit/delete drugs
+   - Track drug name, category, batch number, expiry date, quantity, purchase price, selling price
+   - Search by drug name or barcode
+   - Low stock and expiry alerts
+
+2. **Sales & POS**
+   - Add items to cart
+   - Checkout with payment method: Cash / M-PESA
+   - Record prescription (optional) and customer info
+   - Print receipt with drug details, prices, pharmacy info, M-PESA Till
+   - Save sales to `sales:{pharmacy_id}`
+
+3. **Customer Management**
+   - Save customer info: name, phone, ID
+   - View purchase history
+
+4. **Reports**
+   - Daily, weekly, monthly sales
+   - Profit and loss reports
+   - Expiring drugs report
+   - Stock valuation report
+
+5. **Expenses Module**
+   - Add expenses (e.g., electricity, rent)
+   - Filter and report by date or type
+
+6. **Settings Module**
+   - Pharmacy name, logo
+   - Change receipt footer
+   - Change M-PESA Till Number
+   - View license status
+   - Change password
+
+7. **Receipt Printing**
+   - Include pharmacy name, logo, contacts
+   - List drugs, price, quantity, subtotal, payment method
+   - Include M-PESA ref number
+   - Custom footer from settings
+
+---
+
+📁 DATABASE KEYS (`replit.db`):
+- `users:{email}` → user object
+- `pharmacy:{email}` → business info
+- `inventory:{pharmacy_id}` → list of drug objects
+- `sales:{pharmacy_id}` → sales records
+- `customers:{pharmacy_id}` → customer list
+- `expenses:{pharmacy_id}` → expenses list
+- `licenses:{pharmacy_id}` → license status and expiry
+- `payments:{pharmacy_id}` → license payments
+
+---
+
+🧑‍⚕️ SUPERADMIN DASHBOARD:
+Accessible at `/admin` and only by hardcoded user (e.g., `admin@comolor.com`)
+
+Features:
+- View all registered pharmacies
+- Confirm/reject license payments
+- View payment logs
+- Block/unblock pharmacy accounts
+- View total income
+- Change license amount (e.g. from KES 3,000)
+- Set or change global Till number
+- Update Terms and Conditions text
+- Activity logs (audit trail)
+
+---
+
+🔒 ACCESS CONTROL:
+- All routes must:
+  - Require login
+  - Check if license is active
+  - Check user role to allow access
+
+---
+
+🎯 FINAL OUTPUT:
+- A complete Flask web app for pharmacy sales and inventory
+- All user roles and modules
+- All required HTML templates (register, login, sales, inventory, reports, admin)
+- All necessary Flask routes and logic
+- Fully functional in Replit
+- Easy to replace `replit.db` with PostgreSQL later for deployment on Render
+
