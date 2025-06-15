@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Terms & Conditions - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">📄 Terms & Conditions Management</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <a href="{{ url_for('auth.terms') }}" target="_blank" class="btn btn-outline-info">
+            <i class="fas fa-external-link-alt"></i> View Public Terms
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Edit Terms & Conditions</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="terms_conditions">Terms & Conditions Content</label>
+                        <textarea class="form-control" id="terms_conditions" name="terms_conditions" 
+                                  rows="25" required style="font-family: monospace;">{{ terms }}</textarea>
+                        <small class="form-text text-muted">
+                            You can use Markdown formatting. Changes will be reflected immediately on the registration page.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Terms & Conditions
+                        </button>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary ml-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">Editing Guide</h6>
+            </div>
+            <div class="card-body">
+                <h6>Markdown Support</h6>
+                <p class="small text-muted">Use # for headers, ** for bold, * for italics, - for lists.</p>
+
+                <h6>Key Sections</h6>
+                <ul class="small text-muted">
+                    <li>Service Agreement</li>
+                    <li>Payment Terms</li>
+                    <li>System Usage Rules</li>
+                    <li>Support Information</li>
+                    <li>Termination Policy</li>
+                </ul>
+
+                <h6>Important Notes</h6>
+                <p class="small text-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Changes take effect immediately and will be visible to all new registrations.
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.system_config') }}" class="btn btn-outline-primary btn-sm btn-block mb-2">
+                    <i class="fas fa-cog"></i> System Configuration
+                </a>
+                <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-outline-info btn-sm btn-block mb-2">
+                    <i class="fas fa-store"></i> Manage Pharmacies
+                </a>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary btn-sm btn-block">
+                    <i class="fas fa-history"></i> Audit Trail
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-resize textarea
+document.getElementById('terms_conditions').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+</script>
+{% endblock %}

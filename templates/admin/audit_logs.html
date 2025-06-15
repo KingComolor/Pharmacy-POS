@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Audit Logs - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">📋 Audit Trail</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter Audit Logs</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="action" class="sr-only">Action</label>
+                <select class="form-control" id="action" name="action">
+                    <option value="">All Actions</option>
+                    {% for action in actions %}
+                    <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>
+                        {{ action }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group mr-3">
+                <label for="target_type" class="sr-only">Target Type</label>
+                <select class="form-control" id="target_type" name="target_type">
+                    <option value="">All Target Types</option>
+                    {% for target_type in target_types %}
+                    <option value="{{ target_type }}" {% if filters.target_type == target_type %}selected{% endif %}>
+                        {{ target_type.title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group mr-3">
+                <label for="date_from" class="sr-only">From Date</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" 
+                       value="{{ filters.date_from }}" placeholder="From Date">
+            </div>
+            
+            <div class="form-group mr-3">
+                <label for="date_to" class="sr-only">To Date</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" 
+                       value="{{ filters.date_to }}" placeholder="To Date">
+            </div>
+            
+            <button type="submit" class="btn btn-primary mr-2">
+                <i class="fas fa-search"></i> Filter
+            </button>
+            
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        </form>
+    </div>
+</div>
+
+<!-- Audit Logs Table -->
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            Audit Log Entries ({{ audit_logs.total }} total)
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if audit_logs.items %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Target</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs.items %}
+                        <tr>
+                            <td class="text-nowrap">
+                                <small>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ log.user.first_name }} {{ log.user.last_name }}</strong>
+                                <br><small class="text-muted">{{ log.user.email }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if 'block' in log.action or 'reject' in log.action %}danger{% elif 'confirm' in log.action or 'extend' in log.action %}success{% elif 'update' in log.action or 'edit' in log.action %}warning{% else %}info{% endif %}">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-secondary">{{ log.target_type }}</span>
+                                {% if log.target_id %}
+                                    <br><small class="text-muted">ID: {{ log.target_id }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.details %}
+                                    <div class="details-cell" style="max-width: 300px;">
+                                        <small>{{ log.details[:100] }}{% if log.details|length > 100 %}...{% endif %}</small>
+                                        {% if log.details|length > 100 %}
+                                            <br><a href="#" class="text-primary" onclick="showFullDetails('{{ log.id }}')">Show full details</a>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ log.ip_address or 'Unknown' }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if audit_logs.pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Showing {{ audit_logs.per_page * (audit_logs.page - 1) + 1 }} to 
+                    {{ audit_logs.per_page * audit_logs.page if audit_logs.page < audit_logs.pages else audit_logs.total }} 
+                    of {{ audit_logs.total }} entries
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if audit_logs.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.audit_logs', page=audit_logs.prev_num, **filters) }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in audit_logs.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != audit_logs.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.audit_logs', page=page_num, **filters) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if audit_logs.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.audit_logs', page=audit_logs.next_num, **filters) }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-gray-300"></i>
+                <h5 class="mt-3 text-gray-600">No audit logs found</h5>
+                <p class="text-muted">Try adjusting your filters or check back later.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Full Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Audit Log Details</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre id="fullDetailsContent" class="bg-light p-3"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showFullDetails(logId) {
+    // In a real implementation, you'd fetch the full details via AJAX
+    // For now, we'll just show a placeholder
+    document.getElementById('fullDetailsContent').textContent = 'Full details for log ID: ' + logId;
+    $('#detailsModal').modal('show');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "admin/base.html" %}
+
+{% block title %}System Configuration - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">🔧 System Configuration</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Global System Settings</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="system_name">System Name</label>
+                                <input type="text" class="form-control" id="system_name" name="system_name" 
+                                       value="{{ configs.system_name }}" required>
+                                <small class="form-text text-muted">Display name for the system</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="license_price">Monthly License Price (KES)</label>
+                                <input type="number" class="form-control" id="license_price" name="license_price" 
+                                       value="{{ configs.license_price }}" min="1" step="0.01" required>
+                                <small class="form-text text-muted">Monthly subscription fee</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="mpesa_till">M-PESA Till Number</label>
+                                <input type="text" class="form-control" id="mpesa_till" name="mpesa_till" 
+                                       value="{{ configs.mpesa_till }}" required>
+                                <small class="form-text text-muted">Official M-PESA payment till number</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="license_duration_days">License Duration (Days)</label>
+                                <input type="number" class="form-control" id="license_duration_days" name="license_duration_days" 
+                                       value="{{ configs.license_duration_days }}" min="1" max="365" required>
+                                <small class="form-text text-muted">Default license validity period</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="allow_registrations" name="allow_registrations"
+                                   {% if configs.allow_registrations == 'true' %}checked{% endif %}>
+                            <label class="form-check-label" for="allow_registrations">
+                                Allow New Pharmacy Registrations
+                            </label>
+                            <small class="form-text text-muted">Uncheck to temporarily disable new registrations</small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Configuration
+                        </button>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary ml-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">Configuration Help</h6>
+            </div>
+            <div class="card-body">
+                <h6>System Name</h6>
+                <p class="small text-muted">This appears in the header and various system communications.</p>
+
+                <h6>License Price</h6>
+                <p class="small text-muted">Monthly subscription fee charged to pharmacies. Changes apply to new licenses.</p>
+
+                <h6>M-PESA Till</h6>
+                <p class="small text-muted">The official till number where pharmacies send payments. Displayed during registration.</p>
+
+                <h6>License Duration</h6>
+                <p class="small text-muted">How long each license remains valid after activation.</p>
+
+                <h6>Allow Registrations</h6>
+                <p class="small text-muted">Toggle to temporarily disable new pharmacy registrations for maintenance.</p>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.terms_conditions') }}" class="btn btn-outline-primary btn-sm btn-block mb-2">
+                    <i class="fas fa-file-contract"></i> Edit Terms & Conditions
+                </a>
+                <a href="{{ url_for('admin.financial_overview') }}" class="btn btn-outline-success btn-sm btn-block mb-2">
+                    <i class="fas fa-chart-line"></i> Financial Overview
+                </a>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary btn-sm btn-block">
+                    <i class="fas fa-history"></i> View Audit Logs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

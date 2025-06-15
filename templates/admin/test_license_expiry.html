@@ -1,0 +1,201 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Test License Expiry - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">🧪 Test License Expiry System</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">License Expiry Simulation</h6>
+            </div>
+            <div class="card-body">
+                {% if expiring_licenses %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ expiring_licenses|length }} licenses</strong> are set to expire within the next 7 days.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Pharmacy</th>
+                                    <th>Current Status</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Remaining</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for license in expiring_licenses %}
+                                {% set days_left = (license.expiry_date.date() - moment().date()).days %}
+                                <tr class="{% if days_left <= 1 %}table-danger{% elif days_left <= 3 %}table-warning{% endif %}">
+                                    <td>
+                                        <strong>{{ license.pharmacy.name }}</strong>
+                                        <br><small class="text-muted">ID: {{ license.pharmacy.id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if license.status == 'active' %}success{% elif license.status == 'expired' %}danger{% else %}warning{% endif %}">
+                                            {{ license.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ license.expiry_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if days_left < 0 %}
+                                            <span class="badge badge-danger">Expired {{ (-days_left) }} days ago</span>
+                                        {% elif days_left == 0 %}
+                                            <span class="badge badge-danger">Expires today</span>
+                                        {% elif days_left == 1 %}
+                                            <span class="badge badge-warning">Expires tomorrow</span>
+                                        {% else %}
+                                            <span class="badge badge-info">{{ days_left }} days</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ license.pharmacy.email }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('admin.extend_license', license_id=license.id, days=30) }}" 
+                                               class="btn btn-success btn-sm" title="Extend 30 days">
+                                                <i class="fas fa-plus"></i> 30d
+                                            </a>
+                                            <a href="{{ url_for('admin.extend_license', license_id=license.id, days=7) }}" 
+                                               class="btn btn-info btn-sm" title="Extend 7 days">
+                                                <i class="fas fa-plus"></i> 7d
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>No licenses expiring soon!</strong> All licenses are valid for more than 7 days.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notification Simulation -->
+        {% if notifications %}
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">Simulated Email Notifications</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">These are the notifications that would be sent to pharmacy owners:</p>
+                
+                {% for notification in notifications %}
+                <div class="card mb-3 border-left-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-envelope"></i> 
+                            License Expiry Notification - {{ notification.pharmacy }}
+                        </h6>
+                        <div class="card-text">
+                            <p><strong>To:</strong> {{ notification.email }}</p>
+                            <p><strong>Subject:</strong> Your Comolor Pharmacy License Expires in {{ notification.days_left }} Days</p>
+                            <div class="bg-light p-3 mt-2">
+                                <strong>Email Content:</strong><br>
+                                Dear {{ notification.pharmacy }} Team,<br><br>
+                                This is a reminder that your Comolor Pharmacy Management System license will expire on 
+                                <strong>{{ notification.expiry_date.strftime('%B %d, %Y at %H:%M') }}</strong>
+                                ({{ notification.days_left }} days from now).<br><br>
+                                To avoid service interruption, please renew your license by making a payment of KES 3,000 
+                                to M-PESA Till Number: 123456.<br><br>
+                                Best regards,<br>
+                                Comolor Pharmacy Team
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">Debug Tools</h6>
+            </div>
+            <div class="card-body">
+                <h6>Test Features</h6>
+                <p class="small text-muted">This tool helps you test the license expiry system behavior.</p>
+
+                <div class="mb-3">
+                    <strong>Expiry Thresholds:</strong>
+                    <ul class="small">
+                        <li>7 days: Warning notification</li>
+                        <li>3 days: Urgent notification</li>
+                        <li>1 day: Final warning</li>
+                        <li>0 days: License expires</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <strong>Auto-Actions:</strong>
+                    <ul class="small">
+                        <li>Expired licenses are automatically marked as "expired"</li>
+                        <li>Pharmacy access is blocked when license expires</li>
+                        <li>Email notifications are sent at threshold points</li>
+                    </ul>
+                </div>
+
+                <hr>
+
+                <h6>Quick Actions</h6>
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-warning btn-sm btn-block mb-2">
+                    <i class="fas fa-credit-card"></i> Process Pending Payments
+                </a>
+                <a href="{{ url_for('admin.pharmacies') }}" class="btn btn-primary btn-sm btn-block mb-2">
+                    <i class="fas fa-store"></i> Manage Pharmacies
+                </a>
+                <a href="{{ url_for('admin.system_config') }}" class="btn btn-info btn-sm btn-block">
+                    <i class="fas fa-cog"></i> System Configuration
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">License Statistics</h6>
+            </div>
+            <div class="card-body">
+                {% set total_licenses = expiring_licenses|length %}
+                {% set expired_count = expiring_licenses|selectattr('expiry_date', 'lt', moment())|list|length %}
+                {% set today_count = expiring_licenses|selectattr('expiry_date', 'gt', moment())|selectattr('expiry_date', 'lt', moment() + timedelta(days=1))|list|length %}
+                
+                <div class="d-flex justify-content-between py-1">
+                    <span>Total Expiring:</span>
+                    <span class="badge badge-warning">{{ total_licenses }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span>Already Expired:</span>
+                    <span class="badge badge-danger">{{ expired_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span>Expiring Today:</span>
+                    <span class="badge badge-warning">{{ today_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span>Need Attention:</span>
+                    <span class="badge badge-info">{{ total_licenses - expired_count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Financial Overview - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">💰 Financial Overview</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Revenue Summary Cards -->
+<div class="row">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total Revenue</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            KES {{ "{:,.2f}".format(revenue_data.total_revenue) }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Payments</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ payment_stats.total }}</div>
+                        <div class="text-xs text-muted">
+                            Confirmed: {{ payment_stats.confirmed }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-credit-card fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Payments</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ payment_stats.pending }}</div>
+                        <div class="text-xs text-muted">
+                            Rejected: {{ payment_stats.rejected }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Revenue Chart -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Trend (Last 12 Months)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyRevenueChart" width="100%" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Pharmacies and Recent Payments -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top Paying Pharmacies</h6>
+            </div>
+            <div class="card-body">
+                {% if top_pharmacies %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Pharmacy</th>
+                                    <th>Total Paid</th>
+                                    <th>Payments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pharmacy in top_pharmacies %}
+                                <tr>
+                                    <td>{{ pharmacy.name }}</td>
+                                    <td class="font-weight-bold text-success">
+                                        KES {{ "{:,.2f}".format(pharmacy.total_paid) }}
+                                    </td>
+                                    <td>{{ pharmacy.payment_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No payment data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Payments</h6>
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-primary btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_payments %}
+                    {% for payment, pharmacy in recent_payments %}
+                    <div class="d-flex align-items-center py-2 border-bottom">
+                        <div class="mr-3">
+                            {% if payment.status == 'confirmed' %}
+                                <div class="icon-circle bg-success">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                            {% elif payment.status == 'pending' %}
+                                <div class="icon-circle bg-warning">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                            {% else %}
+                                <div class="icon-circle bg-danger">
+                                    <i class="fas fa-times text-white"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small text-gray-500">{{ payment.created_at.strftime('%b %d, %Y') }}</div>
+                            <strong>{{ pharmacy.name }}</strong>
+                            <div class="text-muted small">{{ payment.mpesa_code }}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-weight-bold">KES {{ "{:,.2f}".format(payment.amount) }}</div>
+                            <span class="badge badge-{{ 'success' if payment.status == 'confirmed' else 'warning' if payment.status == 'pending' else 'danger' }}">
+                                {{ payment.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent payments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Analytics -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Payment Status Distribution</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between py-2">
+                                <span><i class="fas fa-circle text-success"></i> Confirmed</span>
+                                <span class="font-weight-bold">{{ payment_stats.confirmed }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2">
+                                <span><i class="fas fa-circle text-warning"></i> Pending</span>
+                                <span class="font-weight-bold">{{ payment_stats.pending }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2">
+                                <span><i class="fas fa-circle text-danger"></i> Rejected</span>
+                                <span class="font-weight-bold">{{ payment_stats.rejected }}</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between py-2">
+                                <span class="font-weight-bold">Total Payments</span>
+                                <span class="font-weight-bold">{{ payment_stats.total }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.payments') }}" class="btn btn-warning btn-sm btn-block mb-2">
+                    <i class="fas fa-credit-card"></i> Process Payments
+                </a>
+                <a href="{{ url_for('admin.system_config') }}" class="btn btn-primary btn-sm btn-block mb-2">
+                    <i class="fas fa-cog"></i> Update License Price
+                </a>
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-info btn-sm btn-block mb-2">
+                    <i class="fas fa-chart-bar"></i> Detailed Reports
+                </a>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm btn-block">
+                    <i class="fas fa-history"></i> Audit Logs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Monthly Revenue Chart
+const monthlyData = {{ revenue_data.monthly_revenue | tojson }};
+const monthlyCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [{
+            label: 'Monthly Revenue (KES)',
+            data: monthlyData.map(d => d.amount),
+            backgroundColor: 'rgba(28, 200, 138, 0.8)',
+            borderColor: 'rgba(28, 200, 138, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'KES ' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Revenue: KES ' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Payment Status Pie Chart
+const statusCtx = document.getElementById('paymentStatusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Confirmed', 'Pending', 'Rejected'],
+        datasets: [{
+            data: [{{ payment_stats.confirmed }}, {{ payment_stats.pending }}, {{ payment_stats.rejected }}],
+            backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

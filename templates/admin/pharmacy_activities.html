@@ -1,0 +1,170 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Pharmacy Activities - Comolor Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">📊 Pharmacy Activity Monitor</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter Activities</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="pharmacy_id" class="sr-only">Pharmacy</label>
+                <select class="form-control" id="pharmacy_id" name="pharmacy_id">
+                    <option value="">All Pharmacies</option>
+                    {% for pharmacy in pharmacies %}
+                    <option value="{{ pharmacy.id }}" {% if filters.pharmacy_id == pharmacy.id %}selected{% endif %}>
+                        {{ pharmacy.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group mr-3">
+                <label for="activity_type" class="sr-only">Activity Type</label>
+                <select class="form-control" id="activity_type" name="activity_type">
+                    <option value="">All Activity Types</option>
+                    {% for activity_type in activity_types %}
+                    <option value="{{ activity_type }}" {% if filters.activity_type == activity_type %}selected{% endif %}>
+                        {{ activity_type.title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mr-2">
+                <i class="fas fa-search"></i> Filter
+            </button>
+            
+            <a href="{{ url_for('admin.pharmacy_activities') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        </form>
+    </div>
+</div>
+
+<!-- Activities Table -->
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            Activity Log ({{ activities.total }} total entries)
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if activities.items %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Pharmacy</th>
+                            <th>User</th>
+                            <th>Activity</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity, pharmacy, user in activities.items %}
+                        <tr>
+                            <td class="text-nowrap">
+                                <small>{{ activity.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ pharmacy.name }}</strong>
+                                <br><small class="text-muted">{{ pharmacy.email }}</small>
+                                {% if not pharmacy.is_active %}
+                                    <br><span class="badge badge-danger">Blocked</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user %}
+                                    <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                    <br><small class="text-muted">{{ user.role.title() }}</small>
+                                {% else %}
+                                    <span class="text-muted">System</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{% if activity.activity_type == 'login' %}success{% elif activity.activity_type == 'sale' %}primary{% elif activity.activity_type == 'payment' %}warning{% elif activity.activity_type == 'error' %}danger{% else %}info{% endif %}">
+                                    {{ activity.activity_type.title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if activity.details %}
+                                    <small>{{ activity.details[:80] }}{% if activity.details|length > 80 %}...{% endif %}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ activity.ip_address or 'Unknown' }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if activities.pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Showing {{ activities.per_page * (activities.page - 1) + 1 }} to 
+                    {{ activities.per_page * activities.page if activities.page < activities.pages else activities.total }} 
+                    of {{ activities.total }} entries
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if activities.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.pharmacy_activities', page=activities.prev_num, **filters) }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in activities.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != activities.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.pharmacy_activities', page=page_num, **filters) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if activities.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.pharmacy_activities', page=activities.next_num, **filters) }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line fa-3x text-gray-300"></i>
+                <h5 class="mt-3 text-gray-600">No activities found</h5>
+                <p class="text-muted">Try adjusting your filters or check back later.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
